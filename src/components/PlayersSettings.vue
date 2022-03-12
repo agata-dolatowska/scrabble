@@ -1,8 +1,8 @@
 <template lang="pug">
     .players-container
         p Players
-        .player(v-for="(player, i) of players")
-            <Input v-model="player.name" placeholder="add players name" :class="{'error': player.name === '' && showEmptyNames}"></Input>
+        .player(v-for="player in players" :key="player.id")
+            <Input v-model="player.name" placeholder="add players name" :class="{'error': player.name === '' && showEmptyNames}" />
             <Button v-if="players.length > 1" @click="removePlayer(player.id)">delete</Button>
         <Button @click="addPlayer" :disabled="players.length === maxPlayers">Add player</Button>
         <Button @click="savePlayers">Save players</Button>
@@ -32,24 +32,19 @@ export default class PlayersSettings extends Vue {
     }
 
     private addPlayer () {
+      const nextId = this.players[this.players.length - 1]?.id + 1 || 0
+
       if (this.players.length === this.maxPlayers) {
         return
       }
 
-      this.players.push(new PlayerModel(this.players.length))
+      this.players.push(new PlayerModel(nextId))
     }
 
     private removePlayer (id: number) {
       const playerId = this.players.findIndex(player => player.id === id)
 
       this.players.splice(id, 1)
-      this.updatePlayersIds()
-    }
-
-    private updatePlayersIds () {
-      for (let player = 0; player < this.players.length; player++) {
-        this.players[player].id = player
-      }
     }
 
     private savePlayers () {
