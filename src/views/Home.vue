@@ -1,5 +1,6 @@
 <template lang="pug">
   div
+   <PlayersSettings @updatePlayers="updatePlayers" />
    <Board :squares="squares" :currentTiles="currentTiles" @addTurn="addTurn" @updateTiles="updateTiles"/>
    <Scoreboard :scores="scores" />
    <Rack :key="tilesUpdate" v-if="tiles.length > 0" :tiles="tiles" :currentTiles="currentTiles" @setNewTiles="setNewTiles" @returnExchangedTiles="returnExchangedTiles"/>
@@ -10,9 +11,11 @@ import Component from 'vue-class-component'
 import Board from '@/components/Board.vue'
 import Rack from '@/components/Rack.vue'
 import Scoreboard from '@/components/Scoreboard.vue'
+import PlayersSettings from '@/components/PlayersSettings.vue'
 import TurnModel from '@/models/Turn'
 import TileModel from '@/models/Tile'
 import SquareModel from '@/models/Square'
+import PlayerModel from '@/models/Player'
 import defaultTiles from '@/game-assets/tiles'
 import doubleLetterSquares from '@/game-assets/board-squares/double-letter'
 import doubleWordSquares from '@/game-assets/board-squares/double-word'
@@ -23,7 +26,8 @@ import tripleWordSquares from '@/game-assets/board-squares/triple-word'
   components: {
     Board,
     Scoreboard,
-    Rack
+    Rack,
+    PlayersSettings
   }
 })
 export default class Game extends Vue {
@@ -32,9 +36,14 @@ export default class Game extends Vue {
   private tiles: TileModel[] = []
   private scores: TurnModel[] = []
   private tilesUpdate = 0
+  private players: PlayerModel[] = []
 
   mounted () {
     this.startNewGame()
+  }
+
+  updatePlayers (players: PlayerModel[]) {
+    this.players = players
   }
 
   startNewGame (): void {
