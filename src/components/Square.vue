@@ -1,5 +1,5 @@
 <template lang="pug">
-  input(type="text" class="square" v-model="currentSquare.letter" :class="[square.bonus]" :disabled="square.isDisabled" @input="changeLetter" @dragover="allowDrop($event)" @drop="dropTile($event)")
+  input(type="text" class="square" v-model="square.letter" :class="[square.bonus]" :disabled="square.isDisabled" @input="changeLetter" @dragover="allowDrop($event)" @drop="dropTile($event)")
 </template>
 <script lang="ts">
 import Vue from 'vue'
@@ -11,25 +11,23 @@ import SquareModel from '@/models/Square'
 export default class Square extends Vue {
   @Prop({ required: true }) square!: SquareModel
 
-  currentSquare = this.square
-
   allowDrop (e: any): void {
     e.preventDefault()
   }
 
   dropTile (e: any): void {
     e.preventDefault()
-    this.currentSquare.letter = e.dataTransfer.getData('letter')
-    this.$emit('addLetterToWord', this.currentSquare)
+    this.square.letter = e.dataTransfer.getData('letter')
+    this.$emit('addLetterToWord', this.square)
   }
 
   changeLetter () {
-    if (/^[a-zA-Z]$/.test(this.currentSquare.letter)) {
-      this.currentSquare.letter = this.currentSquare.letter.slice(-1)
-      this.$emit('addLetterToWord', this.currentSquare)
+    if (/^[a-zA-Z]$/.test(this.square.letter)) {
+      this.square.letter = this.square.letter.slice(-1)
+      this.$emit('addLetterToWord', this.square)
     } else {
-      this.currentSquare.letter = ''
-      this.$emit('removeEmptyLetter', this.currentSquare)
+      this.square.letter = ''
+      this.$emit('removeEmptyLetter', this.square)
     }
   }
 }

@@ -3,7 +3,7 @@
         table
             tbody
                 tr(v-for="(turn, i) in scores"  :key="i")
-                  <ScoreboardItem v-for="word in turn.savedWords" :word="word"/>
+                  <ScoreboardItem v-for="(word, i) in turn.savedWords" :key="i" :word="word"/>
 </template>
 <script lang="ts">
 import Vue from 'vue'
