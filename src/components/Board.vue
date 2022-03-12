@@ -98,11 +98,14 @@ export default class Board extends Vue {
     const tiles: TileModel[] = JSON.parse(JSON.stringify(this.currentTiles))
     let tileId = 0
     let match = true
+    let blankCounter = tiles.filter(tile => tile.letter === '').length
 
     for (const letter of this.typedWord.letters) {
       tileId = tiles.findIndex(tile => tile.letter.toUpperCase() === letter.letter.toUpperCase())
       if (tileId >= 0) {
         tiles.splice(tileId, 1)
+      } else if (blankCounter > 0) {
+        blankCounter--
       } else {
         match = false
       }

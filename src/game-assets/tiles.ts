@@ -1,7 +1,7 @@
 import Tile from '@/models/Tile'
 
 const tiles: Tile[] = [
-  { letter: 'BLANK', amount: 2, points: 0 },
+  { letter: '', amount: 2, points: 0 },
   { letter: 'A', amount: 9, points: 1 },
   { letter: 'B', amount: 2, points: 3 },
   { letter: 'C', amount: 2, points: 3 },
