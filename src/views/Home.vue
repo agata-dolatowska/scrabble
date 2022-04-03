@@ -1,9 +1,11 @@
 <template lang="pug">
   div
-   <PlayersSettings @updatePlayers="updatePlayers" />
-   <Board :squares="squares" :currentTiles="currentTiles" @addTurn="addTurn" @updateTiles="updateTiles"/>
-   <Scoreboard :scores="scores" />
-   <Rack :key="tilesUpdate" v-if="tiles.length > 0" :tiles="tiles" :currentTiles="currentTiles" @setNewTiles="setNewTiles" @returnExchangedTiles="returnExchangedTiles"/>
+   <PlayersSettings @updatePlayers="updatePlayers" v-if="playersSettingsVisible" />
+   <template v-if="!playersSettingsVisible">
+    <Board :squares="squares" :currentTiles="currentTiles" @addTurn="addTurn" @updateTiles="updateTiles"/>
+    <Scoreboard :scores="scores" />
+    <Rack :key="tilesUpdate" v-if="tiles.length > 0" :tiles="tiles" :currentTiles="currentTiles" @setNewTiles="setNewTiles" @returnExchangedTiles="returnExchangedTiles"/>
+   </template>
 </template>
 <script lang="ts">
 import Vue from 'vue'
@@ -37,6 +39,7 @@ export default class Game extends Vue {
   private scores: TurnModel[] = []
   private tilesUpdate = 0
   private players: PlayerModel[] = []
+  private playersSettingsVisible = true
 
   mounted () {
     this.startNewGame()
@@ -44,6 +47,7 @@ export default class Game extends Vue {
 
   updatePlayers (players: PlayerModel[]) {
     this.players = players
+    this.playersSettingsVisible = false
   }
 
   startNewGame (): void {
