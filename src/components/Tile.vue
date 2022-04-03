@@ -1,5 +1,5 @@
 <template lang="pug">
-    .tile(:draggable="!exchangeActive" @dragstart="startDrag($event, tile)" :class="{'exchange-mode': exchangeActive, exchange: tile.chosenForExchange && exchangeActive}" @click="chooseForExchange")
+    .tile(:draggable="!exchangeActive && !isBlank" @dragstart="startDrag($event, tile)" :class="{'exchange-mode': exchangeActive, exchange: tile.chosenForExchange && exchangeActive, blank: isBlank}" @click="chooseForExchange")
         p.tile-letter {{ tile.letter }}
         p.tile-points {{ tile.points }}
 </template>
@@ -14,6 +14,10 @@ export default class Tile extends Vue {
     @Prop() tile!: TileModel
     @Prop() exchangeActive!: boolean
 
+    get isBlank () {
+      return this.tile.letter === ''
+    }
+
     chooseForExchange (): void {
       if (this.exchangeActive) {
         this.tile.chosenForExchange = !this.tile.chosenForExchange
@@ -27,7 +31,9 @@ export default class Tile extends Vue {
     }
 
     startDrag (e: any, tile: TileModel): void {
-      e.dataTransfer.setData('letter', tile.letter)
+      if (!this.isBlank) {
+        e.dataTransfer.setData('letter', tile.letter)
+      }
     }
 }
 </script>
@@ -42,7 +48,7 @@ export default class Tile extends Vue {
     padding: 10px;
     transition: background-color .5s;
 
-    &:hover {
+    &:not(.blank):hover {
         cursor: move;
     }
 

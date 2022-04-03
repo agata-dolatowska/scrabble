@@ -6,6 +6,7 @@
     <Scoreboard :scores="scores" />
     p Current player {{ currentPlayerName }}
     <Rack :key="tilesUpdate" v-if="tiles.length > 0" :tiles="tiles" :currentTiles="currentTiles" @setNewTiles="setNewTiles" @returnExchangedTiles="returnExchangedTiles" @skipTurn="skipTurn"/>
+    <button v-if="gameSaved || scores.length > 0" @click="startNewGame">Start new game</button>
    </template>
 </template>
 <script lang="ts">
@@ -44,8 +45,37 @@ export default class Game extends Vue {
   private currentPlayer = 0
   private clearTypedWord = false
 
+  get gameSaved () {
+    return localStorage.getItem('scrabble') !== null
+  }
+
   mounted () {
-    this.startNewGame()
+    if (this.gameSaved) {
+      this.startSavedGame()
+    } else {
+      this.startNewGame()
+    }
+
+    window.onbeforeunload = () => this.saveGame()
+  }
+
+  saveGame () {
+    localStorage.setItem('scrabble', JSON.stringify({
+      squares: this.squares,
+      currentTiles: this.currentTiles,
+      tiles: this.tiles,
+      scores: this.scores
+    })
+    )
+  }
+
+  startSavedGame () {
+    const savedGame = JSON.parse(localStorage.getItem('scrabble') as string)
+
+    this.squares = savedGame.squares
+    this.currentTiles = savedGame.currentTiles
+    this.tiles = savedGame.tiles
+    this.scores = savedGame.scores
   }
 
   get currentPlayerName () {
@@ -58,6 +88,11 @@ export default class Game extends Vue {
   }
 
   startNewGame (): void {
+    localStorage.removeItem('scrabble')
+    this.squares = []
+    this.tiles = []
+    this.scores = []
+    this.currentTiles = []
     this.createSquares()
     this.createNewSetOfTiles()
   }
