@@ -44,7 +44,7 @@ export default class PlayersSettings extends Vue {
     private removePlayer (id: number) {
       const playerId = this.players.findIndex(player => player.id === id)
 
-      this.players.splice(id, 1)
+      this.players.splice(playerId, 1)
     }
 
     private savePlayers () {
