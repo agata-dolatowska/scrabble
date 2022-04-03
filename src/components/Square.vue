@@ -11,35 +11,23 @@ import SquareModel from '@/models/Square'
 export default class Square extends Vue {
   @Prop({ required: true }) square!: SquareModel
 
-  currentSquare = this.square
-
-  detectBackspace (e: KeyboardEvent): void {
-    if (!this.square.canBeRemoved) {
-      e.preventDefault()
-    }
-
-    if ((e.key).toLowerCase() === 'backspace' && this.square.canBeRemoved) {
-      this.$emit('goToPreviousSquare', this.currentSquare)
-    }
-  }
-
   allowDrop (e: any): void {
     e.preventDefault()
   }
 
   dropTile (e: any): void {
     e.preventDefault()
-    this.currentSquare.letter = e.dataTransfer.getData('letter')
-    this.$emit('addLetterToWord', this.currentSquare)
+    this.square.letter = e.dataTransfer.getData('letter')
+    this.$emit('addLetterToWord', this.square)
   }
 
   changeLetter () {
-    if (/^[a-zA-Z]$/.test(this.currentSquare.letter)) {
-      this.currentSquare.letter = this.currentSquare.letter.slice(-1)
-      this.$emit('addLetterToWord', this.currentSquare)
+    if (/^[a-zA-Z]$/.test(this.square.letter)) {
+      this.square.letter = this.square.letter.slice(-1)
+      this.$emit('addLetterToWord', this.square)
     } else {
-      this.currentSquare.letter = ''
-      this.$emit('removeEmptyLetter', this.currentSquare)
+      this.square.letter = ''
+      this.$emit('removeEmptyLetter', this.square)
     }
   }
 }

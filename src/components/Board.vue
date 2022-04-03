@@ -3,6 +3,7 @@
     div.board-container
       <Square v-for="(square, i) in squares" :ref="'square' + i" :key="square.id" :square="square" @addLetterToWord="addLetterToWord" @removeEmptyLetter="removeEmptyLetter" @goToPreviousSquare="goToPreviousSquare"/>
     button(@click="checkWord" :disabled="typedWord.letters.length === 0") check word
+    <ErrorMessage v-if="errorOpen" :message="errorMessage" @close="errorOpen = false"/>
 </template>
 <script lang="ts">
 import Vue from 'vue'
@@ -13,10 +14,12 @@ import WordModel from '@/models/Word'
 import Square from '@/components/Square.vue'
 import TileModel from '@/models/Tile'
 import TurnModel from '@/models/Turn'
+import ErrorMessage from '@/components/ErrorMessage.vue'
 
 @Component({
   components: {
-    Square
+    Square,
+    ErrorMessage
   }
 })
 export default class Board extends Vue {
@@ -27,6 +30,12 @@ export default class Board extends Vue {
   private savedWords: WordModel[] = []
   private maxTypedLetters = 7
   private wordCount = 0
+  private errorOpen = false
+  private errorMessage = ''
+
+  get texts () {
+    return this.$store.state.lang.texts
+  }
 
   checkWord () {
     let wordOk = true
@@ -104,11 +113,14 @@ export default class Board extends Vue {
     const tiles: TileModel[] = JSON.parse(JSON.stringify(this.currentTiles))
     let tileId = 0
     let match = true
+    let blankCounter = tiles.filter(tile => tile.letter === '').length
 
     for (const letter of this.typedWord.letters) {
       tileId = tiles.findIndex(tile => tile.letter.toUpperCase() === letter.letter.toUpperCase())
       if (tileId >= 0) {
         tiles.splice(tileId, 1)
+      } else if (blankCounter > 0) {
+        blankCounter--
       } else {
         match = false
       }
@@ -204,23 +216,27 @@ export default class Board extends Vue {
 
     if (this.wordCount === 0) {
       if (this.squares[middleSquareId].letter === '') {
-        console.log('puste środkowe pole')
+        this.errorMessage = this.texts.errors.emptyCenter
+        this.errorOpen = true
         wordOk = false
       }
 
       if (this.typedWord.letters.length < 2) {
-        console.log('za krótkie słowo')
+        this.errorMessage = this.texts.errors.firstWordTooShort
+        this.errorOpen = true
         wordOk = false
       }
     }
 
     if (this.typedWord.letters.length > this.maxTypedLetters) {
-      console.log('za długie')
+      this.errorMessage = this.texts.errors.wordTooLong
+      this.errorOpen = true
       wordOk = false
     }
 
     if (this.wordCount > 0 && this.typedWord.letters.length < 1) {
-      console.log('chociaż jedna literka :<')
+      this.errorMessage = this.texts.errors.wordTooShort
+      this.errorOpen = true
       wordOk = false
     }
 
@@ -374,7 +390,8 @@ export default class Board extends Vue {
     (!wordIsHorizontal && !wordIsVertical)
       ) {
         this.typedWord.orientation = ''
-        console.log('porozrzucane :<')
+        this.errorMessage = this.texts.errors.orientation
+        this.errorOpen = true
         wordOrientationOk = false
       }
     } else {

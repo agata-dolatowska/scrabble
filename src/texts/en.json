@@ -1,0 +1,10 @@
+{
+    "errors": {
+        "emptyCenter": "Play your first word on the center square",
+        "firstWordTooShort": "Word must be at least two letters long",
+        "wordTooShort": "Type at least one letter",
+        "wordTooLong": "You can type up to seven letters",
+        "orientation": "Word must be horizontal or vertical"
+    },
+    "close": "close"
+}
