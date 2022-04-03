@@ -2,10 +2,10 @@
   div
    <PlayersSettings @updatePlayers="updatePlayers" v-if="playersSettingsVisible" />
    <template v-if="!playersSettingsVisible">
-    <Board :squares="squares" :currentTiles="currentTiles" @addTurn="addTurn" @updateTiles="updateTiles"/>
+    <Board :squares="squares" :currentTiles="currentTiles" :clearTypedWord="clearTypedWord" @addTurn="addTurn" @updateTiles="updateTiles" @removeTypedLetter="removeTypedLetter" @stopClearLastWord="clearTypedWord = false"/>
     <Scoreboard :scores="scores" />
     p Current player {{ currentPlayerName }}
-    <Rack :key="tilesUpdate" v-if="tiles.length > 0" :tiles="tiles" :currentTiles="currentTiles" @setNewTiles="setNewTiles" @returnExchangedTiles="returnExchangedTiles"/>
+    <Rack :key="tilesUpdate" v-if="tiles.length > 0" :tiles="tiles" :currentTiles="currentTiles" @setNewTiles="setNewTiles" @returnExchangedTiles="returnExchangedTiles" @skipTurn="skipTurn"/>
    </template>
 </template>
 <script lang="ts">
@@ -42,6 +42,7 @@ export default class Game extends Vue {
   private players: PlayerModel[] = []
   private playersSettingsVisible = true
   private currentPlayer = 0
+  private clearTypedWord = false
 
   mounted () {
     this.startNewGame()
@@ -90,11 +91,20 @@ export default class Game extends Vue {
   addTurn (turn: TurnModel) {
     this.scores.push(turn)
 
+    this.setNextPlayer()
+  }
+
+  setNextPlayer () {
     if (this.currentPlayer === this.players.length - 1) {
       this.currentPlayer = 0
     } else {
       this.currentPlayer++
     }
+  }
+
+  skipTurn () {
+    this.clearTypedWord = true
+    this.setNextPlayer()
   }
 
   createNewSetOfTiles (): void {
@@ -134,6 +144,10 @@ export default class Game extends Vue {
     this.tilesUpdate++
   }
 
+  removeTypedLetter (squareId: number): void {
+    this.squares[squareId].letter = ''
+  }
+
   returnExchangedTiles (tilesToAdd: TileModel[]): void {
     let tileId = 0
 
@@ -142,6 +156,8 @@ export default class Game extends Vue {
 
       this.tiles[tileId].amount++
     }
+
+    this.setNextPlayer()
   }
 }
 </script>

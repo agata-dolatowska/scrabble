@@ -3,6 +3,7 @@
     <p v-if="exchangeActive">Select letters to exchange</p>
     .rack-container
         <Tile v-for="tile in currentTiles" :tile="tile" :exchangeActive="exchangeActive" @addToExchange="addToExchange" @removeFromExchange="removeFromExchange"/>
+    <Button @click="$emit('skipTurn')">Skip turn</Button>
     <button v-if="!exchangeActive" @click="exchangeActive = true">Exchange</button>
     <button v-if="exchangeActive" @click="cancelExchange">Cancel</button>
     <button v-if="exchangeActive" :disabled="tilesToExchange.length === 0" @click="acceptExchange">Accept exchange</button>

@@ -8,7 +8,7 @@
 <script lang="ts">
 import Vue from 'vue'
 import Component from 'vue-class-component'
-import { Prop } from 'vue-property-decorator'
+import { Prop, Watch } from 'vue-property-decorator'
 import SquareModel from '@/models/Square'
 import WordModel from '@/models/Word'
 import Square from '@/components/Square.vue'
@@ -25,6 +25,7 @@ import ErrorMessage from '@/components/ErrorMessage.vue'
 export default class Board extends Vue {
   @Prop() currentTiles!: TileModel[]
   @Prop() squares!: SquareModel[]
+  @Prop() clearTypedWord!: boolean
   private typedWord = new WordModel()
   private additionalWords: WordModel[] = []
   private savedWords: WordModel[] = []
@@ -35,6 +36,25 @@ export default class Board extends Vue {
 
   get texts () {
     return this.$store.state.lang.texts
+  }
+
+  @Watch('clearTypedWord')
+  private clearLastWord (clearWord: boolean) {
+    if (clearWord) {
+      this.removeTypedLetters()
+      this.typedWord = new WordModel()
+      this.$emit('stopClearLastWord')
+    }
+  }
+
+  private removeTypedLetters () {
+    let squareArrId = null
+
+    for (const letter of this.typedWord.letters) {
+      squareArrId = this.squares.findIndex(square => square.id === letter.id)
+
+      this.$emit('removeTypedLetter', squareArrId)
+    }
   }
 
   checkWord () {
