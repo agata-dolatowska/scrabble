@@ -1,7 +1,7 @@
 <template lang="pug">
   div
     div.board-container
-      <Square v-for="(square, i) in squares" :ref="'square' + i" :key="square.id" :square="square" @addLetterToWord="addLetterToWord" @removeEmptyLetter="removeEmptyLetter" />
+      <Square v-for="(square, i) in squares" :ref="'square' + i" :key="square.id" :square="square" @addLetterToWord="addLetterToWord" @removeEmptyLetter="removeEmptyLetter" @goToPreviousSquare="goToPreviousSquare"/>
     button(@click="checkWord" :disabled="typedWord.letters.length === 0") check word
     <ErrorMessage v-if="errorOpen" :message="errorMessage" @close="errorOpen = false"/>
 </template>
@@ -81,6 +81,7 @@ export default class Board extends Vue {
     this.additionalWordsCheck()
 
     if (wordOk) {
+      this.blockDelete()
       currentTurn.savedWords.push(this.typedWord, ...this.additionalWords)
       this.$emit('addTurn', currentTurn)
       this.wordCount++
@@ -92,6 +93,20 @@ export default class Board extends Vue {
     this.typedWord = new WordModel()
     this.additionalWords = []
     this.savedWords = []
+  }
+
+  blockDelete (): void {
+    for (const letter of this.typedWord.letters) {
+      letter.canBeRemoved = false
+    }
+
+    if (this.additionalWords.length > 0) {
+      for (const word of this.additionalWords) {
+        for (const letter of word.letters) {
+          letter.canBeRemoved = false
+        }
+      }
+    }
   }
 
   lettersMatchTiles (): boolean {
@@ -445,6 +460,34 @@ export default class Board extends Vue {
     const letterId = this.typedWord.letters.findIndex(letter => letter.id === letterToDelete.id)
 
     this.typedWord.letters.splice(letterId, 1)
+  }
+
+  goToPreviousSquare (currentSquare: SquareModel): void {
+    let previousSquareId = ''
+    const currentSquareId = this.squares.findIndex(square => square.id === currentSquare.id)
+
+    if (this.typedWord.orientation !== 'both' && this.typedWord.orientation !== '' && this.typedWord.letters.length > 0) {
+      if (this.typedWord.orientation === 'horizontal' && currentSquare.column > 1) {
+        previousSquareId = `square${currentSquareId - 1}`
+        const squareElement = this.$refs[previousSquareId] as Board[]
+        const previousSquareItem = squareElement[0].$el as HTMLElement
+        previousSquareItem.focus()
+      }
+      if (this.typedWord.orientation === 'vertical' && currentSquare.row > 1) {
+        previousSquareId = `square${currentSquareId - 15}`
+        const squareElement = this.$refs[previousSquareId] as Board[]
+        const previousSquareItem = squareElement[0].$el as HTMLElement
+        previousSquareItem.focus()
+      }
+    }
+
+    if (this.typedWord.orientation === 'both' && currentSquare.row > 1 && currentSquare.column > 1) {
+      const lastLetterId = this.squares.findIndex(square => square.id === this.typedWord.letters[0].id)
+      previousSquareId = `square${lastLetterId}`
+      const squareElement = this.$refs[previousSquareId] as Board[]
+      const previousSquareItem = squareElement[0].$el as HTMLElement
+      previousSquareItem.focus()
+    }
   }
 }
 </script>

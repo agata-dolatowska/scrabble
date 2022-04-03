@@ -5,6 +5,7 @@ export default class Square {
     public row: number;
     public column: number;
     public isDisabled = false;
+    public canBeRemoved = true;
 
     constructor (id: string, row: number, column: number) {
       this.id = id
