@@ -4,6 +4,7 @@
    <template v-if="!playersSettingsVisible">
     <Board :squares="squares" :currentTiles="currentTiles" @addTurn="addTurn" @updateTiles="updateTiles"/>
     <Scoreboard :scores="scores" />
+    p Current player {{ currentPlayerName }}
     <Rack :key="tilesUpdate" v-if="tiles.length > 0" :tiles="tiles" :currentTiles="currentTiles" @setNewTiles="setNewTiles" @returnExchangedTiles="returnExchangedTiles"/>
    </template>
 </template>
@@ -40,9 +41,14 @@ export default class Game extends Vue {
   private tilesUpdate = 0
   private players: PlayerModel[] = []
   private playersSettingsVisible = true
+  private currentPlayer = 0
 
   mounted () {
     this.startNewGame()
+  }
+
+  get currentPlayerName () {
+    return this.players[this.currentPlayer].name
   }
 
   updatePlayers (players: PlayerModel[]) {
@@ -83,6 +89,12 @@ export default class Game extends Vue {
 
   addTurn (turn: TurnModel) {
     this.scores.push(turn)
+
+    if (this.currentPlayer === this.players.length - 1) {
+      this.currentPlayer = 0
+    } else {
+      this.currentPlayer++
+    }
   }
 
   createNewSetOfTiles (): void {
