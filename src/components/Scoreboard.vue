@@ -36,7 +36,17 @@ export default class Scoreboard extends Vue {
 }
 </script>
 <style lang="scss" scoped>
+  table {
+    border-collapse: collapse
+  }
+
   td {
     vertical-align: top;
+  }
+
+  th,
+  tbody>tr>td {
+    padding: 5px;
+    border-bottom: 1px solid black;
   }
 </style>

@@ -1,13 +1,17 @@
 <template lang="pug">
   div
-   <PlayersSettings @updatePlayers="updatePlayers" v-if="playersSettingsVisible" />
-   <template v-if="!playersSettingsVisible">
-    <Board :squares="squares" :currentTiles="currentTiles" :clearTypedWord="clearTypedWord" @addTurn="addTurn" @updateTiles="updateTiles" @removeTypedLetter="removeTypedLetter" @stopClearLastWord="clearTypedWord = false"/>
-    <Scoreboard :players="players" />
-    p Current player {{ currentPlayerName }}
-    <Rack :key="tilesUpdate" v-if="tiles.length > 0" :tiles="tiles" :currentTiles="currentTiles" @setNewTiles="setNewTiles" @returnExchangedTiles="returnExchangedTiles" @skipTurn="skipTurn"/>
-    <button v-if="gameSaved || someUserHasPoints" @click="startNewGame">Start new game</button>
-   </template>
+    <PlayersSettings @updatePlayers="updatePlayers" v-if="playersSettingsVisible" />
+    <div class="game-container" v-if="!playersSettingsVisible">
+      <div>
+        <Board :squares="squares" :currentTiles="currentTiles" :clearTypedWord="clearTypedWord" @addTurn="addTurn" @updateTiles="updateTiles" @removeTypedLetter="removeTypedLetter" @stopClearLastWord="clearTypedWord = false"/>
+        p Current player {{ currentPlayerName }}
+        <Rack :key="tilesUpdate" v-if="tiles.length > 0" :tiles="tiles" :currentTiles="currentTiles" @setNewTiles="setNewTiles" @returnExchangedTiles="returnExchangedTiles" @skipTurn="skipTurn"/>
+        <button v-if="gameSaved || someUserHasPoints" @click="startNewGame">Start new game</button>
+      </div>
+      <div>
+        <Scoreboard :players="players" />
+      </div>
+    </div>
 </template>
 <script lang="ts">
 import Vue from 'vue'
@@ -204,3 +208,9 @@ export default class Game extends Vue {
   }
 }
 </script>
+<style lang="scss" scoped>
+.game-container {
+  display: flex;
+  gap: 50px;
+}
+</style>
