@@ -3,10 +3,10 @@
    <PlayersSettings @updatePlayers="updatePlayers" v-if="playersSettingsVisible" />
    <template v-if="!playersSettingsVisible">
     <Board :squares="squares" :currentTiles="currentTiles" :clearTypedWord="clearTypedWord" @addTurn="addTurn" @updateTiles="updateTiles" @removeTypedLetter="removeTypedLetter" @stopClearLastWord="clearTypedWord = false"/>
-    <Scoreboard :scores="scores" />
+    <Scoreboard :players="players" />
     p Current player {{ currentPlayerName }}
     <Rack :key="tilesUpdate" v-if="tiles.length > 0" :tiles="tiles" :currentTiles="currentTiles" @setNewTiles="setNewTiles" @returnExchangedTiles="returnExchangedTiles" @skipTurn="skipTurn"/>
-    <button v-if="gameSaved || scores.length > 0" @click="startNewGame">Start new game</button>
+    <button v-if="gameSaved || someUserHasPoints" @click="startNewGame">Start new game</button>
    </template>
 </template>
 <script lang="ts">
@@ -38,7 +38,6 @@ export default class Game extends Vue {
   private squares: SquareModel[] = []
   private currentTiles: TileModel[] = []
   private tiles: TileModel[] = []
-  private scores: TurnModel[] = []
   private tilesUpdate = 0
   private players: PlayerModel[] = []
   private playersSettingsVisible = true
@@ -47,6 +46,10 @@ export default class Game extends Vue {
 
   get gameSaved () {
     return localStorage.getItem('scrabble') !== null
+  }
+
+  get someUserHasPoints () {
+    return this.players.some(player => player.score.length > 0)
   }
 
   mounted () {
@@ -64,7 +67,8 @@ export default class Game extends Vue {
       squares: this.squares,
       currentTiles: this.currentTiles,
       tiles: this.tiles,
-      scores: this.scores
+      players: this.players,
+      currentPlayer: this.currentPlayer
     })
     )
   }
@@ -75,7 +79,9 @@ export default class Game extends Vue {
     this.squares = savedGame.squares
     this.currentTiles = savedGame.currentTiles
     this.tiles = savedGame.tiles
-    this.scores = savedGame.scores
+    this.players = savedGame.players
+    this.currentPlayer = savedGame.currentPlayer
+    this.playersSettingsVisible = false
   }
 
   get currentPlayerName () {
@@ -91,10 +97,12 @@ export default class Game extends Vue {
     localStorage.removeItem('scrabble')
     this.squares = []
     this.tiles = []
-    this.scores = []
+    this.currentPlayer = 0
+    this.players = []
     this.currentTiles = []
     this.createSquares()
     this.createNewSetOfTiles()
+    this.playersSettingsVisible = true
   }
 
   createSquares (): void {
@@ -124,7 +132,7 @@ export default class Game extends Vue {
   }
 
   addTurn (turn: TurnModel) {
-    this.scores.push(turn)
+    this.players[this.currentPlayer].score.push(turn)
 
     this.setNextPlayer()
   }
