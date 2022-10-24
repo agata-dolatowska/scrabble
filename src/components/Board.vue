@@ -74,7 +74,7 @@ export default class Board extends Vue {
       this.correctLettersOrder(this.typedWord)
     }
 
-    if (this.typedWord.letters.length === 6) {
+    if (this.typedWord.letters.length === 7) {
       currentTurn.allLettersBonus = true
     }
 

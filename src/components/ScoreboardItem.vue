@@ -5,12 +5,12 @@
 import Vue from 'vue'
 import Component from 'vue-class-component'
 import { Prop } from 'vue-property-decorator'
-import WordModel from '@/models/Word'
+import TurnModel from '@/models/Turn'
 import tiles from '@/game-assets/tiles'
 
 @Component
 export default class ScoreboardItem extends Vue {
-    @Prop({ required: true }) words!: WordModel[]
+    @Prop({ required: true }) turn!: TurnModel
 
     get points () {
       let sum = 0
@@ -19,7 +19,7 @@ export default class ScoreboardItem extends Vue {
       const wordBonuses = []
       const wordsPoints = []
 
-      for (const word of this.words) {
+      for (const word of this.turn.savedWords) {
         sum = 0
 
         for (const letter of word.letters) {
@@ -57,8 +57,11 @@ export default class ScoreboardItem extends Vue {
             sum = sum * 3
           }
         }
-
         wordsPoints.push(sum)
+      }
+
+      if (this.turn.allLettersBonus) {
+        wordsPoints.push(50)
       }
 
       return wordsPoints.reduce((prev, current) => prev + current, 0)

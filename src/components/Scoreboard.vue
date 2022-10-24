@@ -13,7 +13,7 @@
                                 td {{ i + 1 }}
                     td(v-for="player in players")
                         tr(v-for="turn in player.score")
-                            <ScoreboardItem :words="turn.savedWords"/>
+                            <ScoreboardItem :turn="turn"/>
 </template>
 <script lang="ts">
 import Vue from 'vue'
