@@ -6,6 +6,7 @@ export default class Player {
   public name = ''
   public id: number
   public score: TurnModel[] = []
+  public totalScore = 0
 
   constructor (id: number) {
     this.id = id

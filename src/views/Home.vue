@@ -136,9 +136,72 @@ export default class Game extends Vue {
   }
 
   addTurn (turn: TurnModel) {
-    this.players[this.currentPlayer].score.push(turn)
+    const turnWithPoints = this.countScores(turn)
 
+    this.players[this.currentPlayer].score.push(turnWithPoints)
+    this.setTotalScore()
     this.setNextPlayer()
+  }
+
+  setTotalScore () {
+    this.players[this.currentPlayer].totalScore = this.players[this.currentPlayer].score.reduce((prev, next) => prev + next.points, 0)
+  }
+
+  countScores (turn: TurnModel) {
+    let sum = 0
+    let point = 0
+    let letterId = 0
+    const wordBonuses = []
+    const wordsPoints = []
+    const allLettersUsedPoints = 50
+
+    for (const word of turn.savedWords) {
+      sum = 0
+
+      for (const letter of word.letters) {
+        letterId = defaultTiles.findIndex(tile => tile.letter === letter.letter.toUpperCase())
+
+        if (letterId >= 0) {
+          point = defaultTiles[letterId].points
+        }
+
+        if (letter.bonus === 'double-letter') {
+          point = point * 2
+        }
+
+        if (letter.bonus === 'triple-letter') {
+          point = point * 3
+        }
+
+        if (letter.bonus === 'double-word') {
+          wordBonuses.push('double-word')
+        }
+
+        if (letter.bonus === 'triple-word') {
+          wordBonuses.push('triple-word')
+        }
+
+        sum += point
+      }
+
+      for (const bonus of wordBonuses) {
+        if (bonus === 'double-word') {
+          sum = sum * 2
+        }
+
+        if (bonus === 'triple-word') {
+          sum = sum * 3
+        }
+      }
+      wordsPoints.push(sum)
+    }
+
+    if (turn.allLettersBonus) {
+      wordsPoints.push(allLettersUsedPoints)
+    }
+
+    turn.points = wordsPoints.reduce((prev, current) => prev + current, 0)
+    return turn
   }
 
   setNextPlayer () {

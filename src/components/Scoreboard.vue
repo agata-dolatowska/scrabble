@@ -7,26 +7,24 @@
                     th(v-for="player in players") {{ player.name }}
             tbody(v-if="someUserHasPoints")
                 tr
-                    td
+                    td.main-td
                         table
                             tr(v-for="(turn, i) in players[0].score.length" :key="i")
                                 td {{ i + 1 }}
-                    td(v-for="player in players")
+                    td.main-td(v-for="player in players")
                         tr(v-for="turn in player.score")
-                            <ScoreboardItem :turn="turn"/>
+                            td {{ turn.points }}
+                tr
+                  td total
+                  td(v-for="player in players") {{ player.totalScore }}
 </template>
 <script lang="ts">
 import Vue from 'vue'
 import Component from 'vue-class-component'
 import { Prop } from 'vue-property-decorator'
-import ScoreboardItem from '@/components/ScoreboardItem.vue'
 import PlayerModel from '@/models/Player'
 
-@Component({
-  components: {
-    ScoreboardItem
-  }
-})
+@Component
 export default class Scoreboard extends Vue {
     @Prop({ required: true }) players!: PlayerModel[]
 
@@ -45,8 +43,12 @@ export default class Scoreboard extends Vue {
   }
 
   th,
-  tbody>tr>td {
-    padding: 5px;
+  .main-td {
     border-bottom: 1px solid black;
+  }
+
+  th,
+  td {
+    padding: 5px;
   }
 </style>
