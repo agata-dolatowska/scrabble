@@ -1,5 +1,5 @@
 <template lang="pug">
-    div
+    div.scoreboard
         table
             thead
                 tr
@@ -14,6 +14,7 @@
                     td.main-td(v-for="player in players")
                         tr(v-for="turn in player.score")
                             td {{ turn.points }}
+            tfoot
                 tr
                   td total
                   td(v-for="player in players") {{ player.totalScore }}
@@ -34,6 +35,12 @@ export default class Scoreboard extends Vue {
 }
 </script>
 <style lang="scss" scoped>
+  .scoreboard {
+    max-height: 500px;
+    overflow-y: auto;
+    overflow-x: hidden;
+  }
+
   table {
     border-collapse: collapse
   }
@@ -50,5 +57,19 @@ export default class Scoreboard extends Vue {
   th,
   td {
     padding: 5px;
+  }
+
+  thead,
+  tfoot {
+    position: sticky;
+    background-color: white;
+  }
+
+  thead {
+    top: 0;
+  }
+
+  tfoot {
+    bottom: 0;
   }
 </style>
