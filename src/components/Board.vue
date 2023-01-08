@@ -26,9 +26,9 @@ export default class Board extends Vue {
   @Prop() currentTiles!: TileModel[]
   @Prop() squares!: SquareModel[]
   @Prop() clearTypedWord!: boolean
+  @Prop() savedWords!: WordModel[]
   private typedWord = new WordModel()
   private additionalWords: WordModel[] = []
-  private savedWords: WordModel[] = []
   private maxTypedLetters = 7
   private wordCount = 0
   private errorOpen = false
@@ -101,6 +101,7 @@ export default class Board extends Vue {
     this.additionalWordsCheck()
 
     if (wordOk) {
+      this.checkAdditionalDuplicates()
       currentTurn.savedWords.push(this.typedWord, ...this.additionalWords)
       this.$emit('addTurn', currentTurn)
       this.wordCount++
@@ -111,7 +112,6 @@ export default class Board extends Vue {
 
     this.typedWord = new WordModel()
     this.additionalWords = []
-    this.savedWords = []
   }
 
   lettersMatchTiles (): boolean {
@@ -155,6 +155,25 @@ export default class Board extends Vue {
         this.additionalWords[additionalWordId].letters.push(this.typedWord.letters[letter])
         this.correctLettersOrder(this.additionalWords[additionalWordId])
         additionalWordId++
+      }
+    }
+  }
+
+  checkAdditionalDuplicates () {
+    let wordExists
+    let additionalCopy = ''
+    let savedCopy = ''
+    let duplicateIndex
+
+    for (const additionalWord of this.additionalWords) {
+      additionalCopy = JSON.stringify(additionalWord)
+      wordExists = this.savedWords.filter(savedWord => {
+        savedCopy = JSON.stringify(savedWord)
+        return savedCopy.includes(additionalCopy)
+      })
+      if (wordExists) {
+        duplicateIndex = this.additionalWords.findIndex(savedWord => JSON.stringify(savedWord).includes(additionalCopy))
+        this.additionalWords.splice(duplicateIndex, 1)
       }
     }
   }
@@ -299,6 +318,7 @@ export default class Board extends Vue {
     const lastLetterId = this.squares.findIndex(square => square.id === lastLetter.id)
     const newAdditionalWord = new WordModel()
     let letterId = lastLetterId
+    const oneBeforeLastRowId = 209
 
     if (orientation === 'horizontal' || orientation === 'both') {
       letterId = lastLetterId + 1
@@ -316,7 +336,7 @@ export default class Board extends Vue {
       }
     }
 
-    if (orientation === 'vertical' || orientation === 'both') {
+    if ((letterId < oneBeforeLastRowId && orientation === 'vertical') || orientation === 'both') {
       letterId = lastLetterId + 15
 
       for (letterId; this.squares[letterId].letter !== '' && this.squares[letterId].column === lastLetter.column && letterId <= this.squares.length - 1; letterId += 15) {

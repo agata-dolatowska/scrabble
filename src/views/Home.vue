@@ -3,7 +3,7 @@
     <PlayersSettings @updatePlayers="updatePlayers" v-if="playersSettingsVisible" />
     <div class="game-container" v-if="!playersSettingsVisible">
       <div>
-        <Board :squares="squares" :currentTiles="currentTiles" :clearTypedWord="clearTypedWord" @addTurn="addTurn" @updateTiles="updateTiles" @removeTypedLetter="removeTypedLetter" @stopClearLastWord="clearTypedWord = false"/>
+        <Board :squares="squares" :currentTiles="currentTiles" :clearTypedWord="clearTypedWord" :savedWords="savedWords" @addTurn="addTurn" @updateTiles="updateTiles" @removeTypedLetter="removeTypedLetter" @stopClearLastWord="clearTypedWord = false"/>
         p Current player {{ currentPlayerName }}
         <Rack :key="tilesUpdate" v-if="tiles.length > 0" :tiles="tiles" :currentTiles="currentTiles" @setNewTiles="setNewTiles" @returnExchangedTiles="returnExchangedTiles" @skipTurn="skipTurn"/>
         <button v-if="gameSaved || someUserHasPoints" @click="startNewGame">Start new game</button>
@@ -56,6 +56,20 @@ export default class Game extends Vue {
     return this.players.some(player => player.score.length > 0)
   }
 
+  get savedWords () {
+    const words = []
+
+    for (const player of this.players) {
+      for (const score of player.score) {
+        for (const word of score.savedWords) {
+          words.push(word)
+        }
+      }
+    }
+
+    return words
+  }
+
   mounted () {
     if (this.gameSaved) {
       this.startSavedGame()
@@ -89,7 +103,7 @@ export default class Game extends Vue {
   }
 
   get currentPlayerName () {
-    return this.players[this.currentPlayer].name
+    return this.players.length ? this.players[this.currentPlayer].name : ''
   }
 
   updatePlayers (players: PlayerModel[]) {
