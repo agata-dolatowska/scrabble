@@ -103,7 +103,7 @@ export default class Game extends Vue {
   }
 
   get currentPlayerName () {
-    return this.players.length ? this.players[this.currentPlayer].name : ''
+    return this.players?.length && this.currentPlayer >= 0 ? this.players[this.currentPlayer].name : ''
   }
 
   updatePlayers (players: PlayerModel[]) {

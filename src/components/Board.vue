@@ -472,8 +472,12 @@ export default class Board extends Vue {
 
   addLetterToWord (newLetter: SquareModel): void {
     const letterId = this.typedWord.letters.findIndex(letter => letter.id === newLetter.id)
-    const squareId = this.squares.findIndex(square => square.id === newLetter.id)
+    const lastColumnId = 15
+    const lastRowId = 15
+    let squareId = this.squares.findIndex(square => square.id === newLetter.id)
     let nextSquareId = ''
+    let squareElement: Board[]
+    let nextSquareItem: HTMLElement
 
     if (letterId >= 0) {
       this.typedWord.letters[letterId] = newLetter
@@ -484,17 +488,36 @@ export default class Board extends Vue {
     }
 
     if (this.wordOrientationCorrect() && this.typedWord.orientation !== 'both') {
-      if (this.typedWord.orientation === 'horizontal' && newLetter.column < 15) {
-        nextSquareId = `square${squareId + 1}`
-        const squareElement = this.$refs[nextSquareId] as Board[]
-        const nextSquareItem = squareElement[0].$el as HTMLElement
-        nextSquareItem.focus()
+      if (this.typedWord.orientation === 'horizontal' && newLetter.column < lastColumnId) {
+        squareId = squareId + 1
+
+        while (!this.squares[squareId].canBeRemoved && this.squares[squareId].column < lastColumnId) {
+          squareId++
+        }
+
+        nextSquareId = `square${squareId}`
+        squareElement = this.$refs[nextSquareId] as Board[]
+        nextSquareItem = squareElement[0].$el as HTMLElement
+
+        if (this.squares[squareId].canBeRemoved && this.squares[squareId].column <= lastColumnId) {
+          nextSquareItem.focus()
+        }
       }
-      if (this.typedWord.orientation === 'vertical' && newLetter.row < 15) {
-        nextSquareId = `square${squareId + 15}`
-        const squareElement = this.$refs[nextSquareId] as Board[]
-        const nextSquareItem = squareElement[0].$el as HTMLElement
-        nextSquareItem.focus()
+
+      if (this.typedWord.orientation === 'vertical' && newLetter.row < lastRowId) {
+        squareId = squareId + 15
+
+        while (!this.squares[squareId].canBeRemoved && this.squares[squareId].column < lastRowId) {
+          squareId += 15
+        }
+
+        nextSquareId = `square${squareId}`
+        squareElement = this.$refs[nextSquareId] as Board[]
+        nextSquareItem = squareElement[0].$el as HTMLElement
+
+        if (this.squares[squareId].canBeRemoved && this.squares[squareId].row <= lastRowId) {
+          nextSquareItem.focus()
+        }
       }
     }
   }
@@ -507,28 +530,49 @@ export default class Board extends Vue {
 
   goToPreviousSquare (currentSquare: SquareModel): void {
     let previousSquareId = ''
+    let squareElement: Board[]
+    let previousSquareItem: HTMLElement
+    let squareId = this.squares.findIndex(square => square.id === currentSquare.id)
     const currentSquareId = this.squares.findIndex(square => square.id === currentSquare.id)
 
     if (this.typedWord.orientation !== 'both' && this.typedWord.orientation !== '' && this.typedWord.letters.length > 0) {
       if (this.typedWord.orientation === 'horizontal' && currentSquare.column > 1) {
-        previousSquareId = `square${currentSquareId - 1}`
-        const squareElement = this.$refs[previousSquareId] as Board[]
-        const previousSquareItem = squareElement[0].$el as HTMLElement
-        previousSquareItem.focus()
+        squareId--
+
+        while (!this.squares[squareId].canBeRemoved && this.squares[squareId].column > 0) {
+          squareId--
+        }
+
+        previousSquareId = `square${squareId}`
+        squareElement = this.$refs[previousSquareId] as Board[]
+        previousSquareItem = squareElement[0].$el as HTMLElement
+
+        if (this.squares[squareId].canBeRemoved && this.squares[squareId].column > 0) {
+          previousSquareItem.focus()
+        }
       }
-      if (this.typedWord.orientation === 'vertical' && currentSquare.row > 1) {
-        previousSquareId = `square${currentSquareId - 15}`
-        const squareElement = this.$refs[previousSquareId] as Board[]
-        const previousSquareItem = squareElement[0].$el as HTMLElement
-        previousSquareItem.focus()
+      if (this.typedWord.orientation === 'vertical' && currentSquare.row > 0) {
+        squareId -= 15
+
+        while (!this.squares[squareId].canBeRemoved && this.squares[squareId].row > 0) {
+          squareId -= 15
+        }
+
+        previousSquareId = `square${squareId}`
+        squareElement = this.$refs[previousSquareId] as Board[]
+        previousSquareItem = squareElement[0].$el as HTMLElement
+
+        if (this.squares[squareId].canBeRemoved && this.squares[squareId].row > 0) {
+          previousSquareItem.focus()
+        }
       }
     }
 
     if (this.typedWord.orientation === 'both' && currentSquare.row > 1 && currentSquare.column > 1) {
-      const lastLetterId = this.squares.findIndex(square => square.id === this.typedWord.letters[0].id)
-      previousSquareId = `square${lastLetterId}`
-      const squareElement = this.$refs[previousSquareId] as Board[]
-      const previousSquareItem = squareElement[0].$el as HTMLElement
+      squareId = this.squares.findIndex(square => square.id === this.typedWord.letters[0].id)
+      previousSquareId = `square${squareId}`
+      squareElement = this.$refs[previousSquareId] as Board[]
+      previousSquareItem = squareElement[0].$el as HTMLElement
       previousSquareItem.focus()
     }
   }
