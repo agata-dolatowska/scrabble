@@ -287,7 +287,7 @@ export default class Board extends Vue {
       }
     }
 
-    if (wordOrientation === 'vertical' || wordOrientation === 'both') {
+    if (letterId - 15 >= 0 && (wordOrientation === 'vertical' || wordOrientation === 'both')) {
       letterId -= 15
 
       for (letterId; this.squares[letterId].letter !== '' && this.squares[letterId].column === firstLetter.column && letterId >= 0; letterId -= 15) {
