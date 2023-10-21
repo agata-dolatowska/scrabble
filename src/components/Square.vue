@@ -16,9 +16,11 @@ export default class Square extends Vue {
   }
 
   dropTile (e: any): void {
-    e.preventDefault()
-    this.square.letter = e.dataTransfer.getData('letter')
-    this.$emit('addLetterToWord', this.square)
+    if (this.square.canBeRemoved) {
+      e.preventDefault()
+      this.square.letter = e.dataTransfer.getData('letter')
+      this.$emit('addLetterToWord', this.square)
+    }
   }
 
   detectBackspace (e: any) {
