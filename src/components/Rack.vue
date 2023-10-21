@@ -27,6 +27,16 @@ export default class Rack extends Vue {
   private exchangeActive = false
   private tilesToExchange: TileModel[] = []
 
+  get rackEmpty () {
+    const rackIsEmpty = this.currentTiles.length === 0
+
+    if (rackIsEmpty) {
+      this.chooseRandomLetters()
+    }
+
+    return rackIsEmpty
+  }
+
   mounted () {
     this.chooseRandomLetters()
   }
