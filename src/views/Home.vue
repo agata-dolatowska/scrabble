@@ -233,6 +233,10 @@ export default class Game extends Vue {
   skipTurn () {
     this.clearTypedWord = true
     this.addTurn(new TurnModel())
+
+    if (this.players[this.currentPlayer].totalScore === 0 && this.players[this.currentPlayer].availableTiles.length === 0) {
+      this.tilesUpdate++
+    }
   }
 
   createNewSetOfTiles (): void {
