@@ -5,4 +5,5 @@ export default class Turn {
     public allLettersBonus = false
     public savedWords: Word[] = []
     public typedLetters: Square[] = []
+    public points = 0
 }

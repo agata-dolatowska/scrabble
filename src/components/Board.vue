@@ -26,16 +26,19 @@ export default class Board extends Vue {
   @Prop() currentTiles!: TileModel[]
   @Prop() squares!: SquareModel[]
   @Prop() clearTypedWord!: boolean
+  @Prop() savedWords!: WordModel[]
   private typedWord = new WordModel()
   private additionalWords: WordModel[] = []
-  private savedWords: WordModel[] = []
   private maxTypedLetters = 7
-  private wordCount = 0
   private errorOpen = false
   private errorMessage = ''
 
   get texts () {
     return this.$store.state.lang.texts
+  }
+
+  get wordCount () {
+    return this.savedWords.length
   }
 
   @Watch('clearTypedWord')
@@ -60,7 +63,7 @@ export default class Board extends Vue {
   checkWord () {
     let wordOk = true
     const currentTurn = new TurnModel()
-    currentTurn.typedLetters = this.typedWord.letters
+    currentTurn.typedLetters = JSON.parse(JSON.stringify(this.typedWord.letters))
 
     if (!this.wordLengthCorrect()) {
       wordOk = false
@@ -74,7 +77,7 @@ export default class Board extends Vue {
       this.correctLettersOrder(this.typedWord)
     }
 
-    if (this.typedWord.letters.length === 6) {
+    if (this.typedWord.letters.length === 7) {
       currentTurn.allLettersBonus = true
     }
 
@@ -102,9 +105,9 @@ export default class Board extends Vue {
 
     if (wordOk) {
       this.blockDelete()
+      this.checkAdditionalDuplicates(currentTurn.typedLetters)
       currentTurn.savedWords.push(this.typedWord, ...this.additionalWords)
       this.$emit('addTurn', currentTurn)
-      this.wordCount++
       this.$emit('updateTiles', currentTurn.typedLetters)
     } else {
       this.removeWordFromBoard()
@@ -112,7 +115,6 @@ export default class Board extends Vue {
 
     this.typedWord = new WordModel()
     this.additionalWords = []
-    this.savedWords = []
   }
 
   blockDelete (): void {
@@ -172,6 +174,20 @@ export default class Board extends Vue {
         additionalWordId++
       }
     }
+  }
+
+  checkAdditionalDuplicates (typedLetters: SquareModel[]) {
+    const correctAdditionalWords: WordModel[] = []
+
+    for (const additionalWord of this.additionalWords) {
+      for (const typedLetter of typedLetters) {
+        if (additionalWord.letters.some(letter => JSON.stringify(letter) === JSON.stringify(typedLetter))) {
+          correctAdditionalWords.push(additionalWord)
+        }
+      }
+    }
+
+    this.additionalWords = JSON.parse(JSON.stringify(correctAdditionalWords))
   }
 
   parallelWord (): boolean {
@@ -267,8 +283,9 @@ export default class Board extends Vue {
     const firstLetterId = this.squares.findIndex(square => square.id === firstLetter.id)
     const newAdditionalWord = new WordModel()
     let letterId = firstLetterId
+    let wordOrientation = orientation
 
-    if (orientation === 'horizontal' || orientation === 'both') {
+    if (wordOrientation === 'horizontal' || wordOrientation === 'both') {
       letterId -= 1
 
       for (letterId; this.squares[letterId].letter !== '' && this.squares[letterId].row === firstLetter.row && letterId >= 0; letterId -= 1) {
@@ -280,11 +297,12 @@ export default class Board extends Vue {
 
         if (this.typedWord.orientation === 'both') {
           this.typedWord.orientation = 'horizontal'
+          wordOrientation = 'horizontal'
         }
       }
     }
 
-    if (orientation === 'vertical' || orientation === 'both') {
+    if (letterId - 15 >= 0 && (wordOrientation === 'vertical' || wordOrientation === 'both')) {
       letterId -= 15
 
       for (letterId; this.squares[letterId].letter !== '' && this.squares[letterId].column === firstLetter.column && letterId >= 0; letterId -= 15) {
@@ -296,6 +314,7 @@ export default class Board extends Vue {
 
         if (this.typedWord.orientation === 'both') {
           this.typedWord.orientation = 'vertical'
+          wordOrientation = 'vertical'
         }
       }
     }
@@ -306,16 +325,18 @@ export default class Board extends Vue {
       }
 
       this.additionalWords[additionalId].letters = newAdditionalWord.letters
-      this.additionalWords[additionalId].orientation = orientation
+      this.additionalWords[additionalId].orientation = wordOrientation
     }
   }
 
   checkWordEnding (lastLetter: SquareModel, orientation: string, additionalId?: number): void {
     const lastLetterId = this.squares.findIndex(square => square.id === lastLetter.id)
     const newAdditionalWord = new WordModel()
+    const oneBeforeLastRowId = 209
     let letterId = lastLetterId
+    let wordOrientation = orientation
 
-    if (orientation === 'horizontal' || orientation === 'both') {
+    if (wordOrientation === 'horizontal' || wordOrientation === 'both') {
       letterId = lastLetterId + 1
 
       for (letterId; this.squares[letterId].letter !== '' && this.squares[letterId].row === lastLetter.row && letterId <= this.squares.length - 1; letterId += 1) {
@@ -327,11 +348,12 @@ export default class Board extends Vue {
 
         if (this.typedWord.orientation === 'both') {
           this.typedWord.orientation = 'horizontal'
+          wordOrientation = 'horizontal'
         }
       }
     }
 
-    if (orientation === 'vertical' || orientation === 'both') {
+    if ((letterId < oneBeforeLastRowId && wordOrientation === 'vertical') || wordOrientation === 'both') {
       letterId = lastLetterId + 15
 
       for (letterId; this.squares[letterId].letter !== '' && this.squares[letterId].column === lastLetter.column && letterId <= this.squares.length - 1; letterId += 15) {
@@ -343,6 +365,7 @@ export default class Board extends Vue {
 
         if (this.typedWord.orientation === 'both') {
           this.typedWord.orientation = 'vertical'
+          wordOrientation = 'vertical'
         }
       }
     }
@@ -353,7 +376,7 @@ export default class Board extends Vue {
       }
 
       this.additionalWords[additionalId].letters = newAdditionalWord.letters
-      this.additionalWords[additionalId].orientation = orientation
+      this.additionalWords[additionalId].orientation = wordOrientation
     }
   }
 

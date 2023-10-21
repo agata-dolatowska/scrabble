@@ -1,13 +1,17 @@
 <template lang="pug">
   div
-   <PlayersSettings @updatePlayers="updatePlayers" v-if="playersSettingsVisible" />
-   <template v-if="!playersSettingsVisible">
-    <Board :squares="squares" :currentTiles="currentTiles" :clearTypedWord="clearTypedWord" @addTurn="addTurn" @updateTiles="updateTiles" @removeTypedLetter="removeTypedLetter" @stopClearLastWord="clearTypedWord = false"/>
-    <Scoreboard :scores="scores" />
-    p Current player {{ currentPlayerName }}
-    <Rack :key="tilesUpdate" v-if="tiles.length > 0" :tiles="tiles" :currentTiles="currentTiles" @setNewTiles="setNewTiles" @returnExchangedTiles="returnExchangedTiles" @skipTurn="skipTurn"/>
-    <button v-if="gameSaved || scores.length > 0" @click="startNewGame">Start new game</button>
-   </template>
+    <PlayersSettings @updatePlayers="updatePlayers" v-if="playersSettingsVisible" />
+    <div class="game-container" v-if="!playersSettingsVisible">
+      <div>
+        <Board :squares="squares" :currentTiles="currentTiles" :clearTypedWord="clearTypedWord" :savedWords="savedWords" @addTurn="addTurn" @updateTiles="updateTiles" @removeTypedLetter="removeTypedLetter" @stopClearLastWord="clearTypedWord = false"/>
+        p Current player {{ currentPlayerName }}
+        <Rack :key="tilesUpdate" v-if="tiles.length > 0" :tiles="tiles" :currentTiles="currentTiles" @setNewTiles="setNewTiles" @returnExchangedTiles="returnExchangedTiles" @skipTurn="skipTurn"/>
+        <button v-if="gameSaved || someUserHasPoints" @click="startNewGame">Start new game</button>
+      </div>
+      <div>
+        <Scoreboard :players="players" />
+      </div>
+    </div>
 </template>
 <script lang="ts">
 import Vue from 'vue'
@@ -38,7 +42,6 @@ export default class Game extends Vue {
   private squares: SquareModel[] = []
   private currentTiles: TileModel[] = []
   private tiles: TileModel[] = []
-  private scores: TurnModel[] = []
   private tilesUpdate = 0
   private players: PlayerModel[] = []
   private playersSettingsVisible = true
@@ -47,6 +50,24 @@ export default class Game extends Vue {
 
   get gameSaved () {
     return localStorage.getItem('scrabble') !== null
+  }
+
+  get someUserHasPoints () {
+    return this.players.some(player => player.score.length > 0)
+  }
+
+  get savedWords () {
+    const words = []
+
+    for (const player of this.players) {
+      for (const score of player.score) {
+        for (const word of score.savedWords) {
+          words.push(word)
+        }
+      }
+    }
+
+    return words
   }
 
   mounted () {
@@ -64,7 +85,8 @@ export default class Game extends Vue {
       squares: this.squares,
       currentTiles: this.currentTiles,
       tiles: this.tiles,
-      scores: this.scores
+      players: this.players,
+      currentPlayer: this.currentPlayer
     })
     )
   }
@@ -75,11 +97,13 @@ export default class Game extends Vue {
     this.squares = savedGame.squares
     this.currentTiles = savedGame.currentTiles
     this.tiles = savedGame.tiles
-    this.scores = savedGame.scores
+    this.players = savedGame.players
+    this.currentPlayer = savedGame.currentPlayer
+    this.playersSettingsVisible = false
   }
 
   get currentPlayerName () {
-    return this.players[this.currentPlayer].name
+    return this.players.length ? this.players[this.currentPlayer].name : ''
   }
 
   updatePlayers (players: PlayerModel[]) {
@@ -91,10 +115,12 @@ export default class Game extends Vue {
     localStorage.removeItem('scrabble')
     this.squares = []
     this.tiles = []
-    this.scores = []
+    this.currentPlayer = 0
+    this.players = []
     this.currentTiles = []
     this.createSquares()
     this.createNewSetOfTiles()
+    this.playersSettingsVisible = true
   }
 
   createSquares (): void {
@@ -124,9 +150,72 @@ export default class Game extends Vue {
   }
 
   addTurn (turn: TurnModel) {
-    this.scores.push(turn)
+    const turnWithPoints = this.countScores(turn)
 
+    this.players[this.currentPlayer].score.push(turnWithPoints)
+    this.setTotalScore()
     this.setNextPlayer()
+  }
+
+  setTotalScore () {
+    this.players[this.currentPlayer].totalScore = this.players[this.currentPlayer].score.reduce((prev, next) => prev + next.points, 0)
+  }
+
+  countScores (turn: TurnModel) {
+    let sum = 0
+    let point = 0
+    let letterId = 0
+    const wordBonuses = []
+    const wordsPoints = []
+    const allLettersUsedPoints = 50
+
+    for (const word of turn.savedWords) {
+      sum = 0
+
+      for (const letter of word.letters) {
+        letterId = defaultTiles.findIndex(tile => tile.letter === letter.letter.toUpperCase())
+
+        if (letterId >= 0) {
+          point = defaultTiles[letterId].points
+        }
+
+        if (letter.bonus === 'double-letter') {
+          point = point * 2
+        }
+
+        if (letter.bonus === 'triple-letter') {
+          point = point * 3
+        }
+
+        if (letter.bonus === 'double-word') {
+          wordBonuses.push('double-word')
+        }
+
+        if (letter.bonus === 'triple-word') {
+          wordBonuses.push('triple-word')
+        }
+
+        sum += point
+      }
+
+      for (const bonus of wordBonuses) {
+        if (bonus === 'double-word') {
+          sum = sum * 2
+        }
+
+        if (bonus === 'triple-word') {
+          sum = sum * 3
+        }
+      }
+      wordsPoints.push(sum)
+    }
+
+    if (turn.allLettersBonus) {
+      wordsPoints.push(allLettersUsedPoints)
+    }
+
+    turn.points = wordsPoints.reduce((prev, current) => prev + current, 0)
+    return turn
   }
 
   setNextPlayer () {
@@ -196,3 +285,9 @@ export default class Game extends Vue {
   }
 }
 </script>
+<style lang="scss" scoped>
+.game-container {
+  display: flex;
+  gap: 50px;
+}
+</style>
