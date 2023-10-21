@@ -232,7 +232,7 @@ export default class Game extends Vue {
 
   skipTurn () {
     this.clearTypedWord = true
-    this.setNextPlayer()
+    this.addTurn(new TurnModel())
   }
 
   createNewSetOfTiles (): void {
