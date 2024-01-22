@@ -301,6 +301,7 @@ export default class Game extends Vue {
       this.tiles[tileId].amount++
     }
 
+    this.clearTypedWord = true
     this.skipTurn()
   }
 }
