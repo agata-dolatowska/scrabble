@@ -29,6 +29,7 @@ import doubleLetterSquares from '@/game-assets/board-squares/double-letter'
 import doubleWordSquares from '@/game-assets/board-squares/double-word'
 import tripleLetterSquares from '@/game-assets/board-squares/triple-letter'
 import tripleWordSquares from '@/game-assets/board-squares/triple-word'
+import chooseRandomLetters from '@/utils/rack'
 
 @Component({
   components: {
@@ -48,7 +49,8 @@ export default class Game extends Vue {
   private clearTypedWord = false
 
   get gameSaved () {
-    return localStorage.getItem('scrabble') !== null
+    return localStorage.getItem('scrabble') !== null &&
+    this.players.length
   }
 
   get someUserHasPoints () {
@@ -114,6 +116,7 @@ export default class Game extends Vue {
   updatePlayers (players: PlayerModel[]) {
     this.players = players
     this.playersSettingsVisible = false
+    this.createAvailableTiles()
   }
 
   startNewGame (): void {
@@ -248,9 +251,14 @@ export default class Game extends Vue {
     }
   }
 
+  createAvailableTiles (): void {
+    for (const player of this.players) {
+      player.availableTiles.push(...chooseRandomLetters(this.tiles))
+    }
+  }
+
   setNewTiles (tiles: TileModel[]): void {
     let tileId = 0
-
     this.players[this.currentPlayer].availableTiles = tiles
 
     for (const currentTile of this.currentTiles) {

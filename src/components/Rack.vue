@@ -15,6 +15,7 @@ import Component from 'vue-class-component'
 import { Prop } from 'vue-property-decorator'
 import Tile from '@/components/Tile.vue'
 import TileModel from '@/models/Tile'
+import chooseRandomLetters from '@/utils/rack'
 
 @Component({
   components: {
@@ -26,20 +27,6 @@ export default class Rack extends Vue {
   @Prop() currentTiles!: TileModel[]
   private exchangeActive = false
   private tilesToExchange: TileModel[] = []
-
-  get rackEmpty () {
-    const rackIsEmpty = this.currentTiles.length === 0
-
-    if (rackIsEmpty) {
-      this.chooseRandomLetters()
-    }
-
-    return rackIsEmpty
-  }
-
-  mounted () {
-    this.chooseRandomLetters()
-  }
 
   addToExchange (tile: TileModel): void {
     this.tilesToExchange.push(tile)
@@ -71,23 +58,9 @@ export default class Rack extends Vue {
     }
 
     this.exchangeActive = false
-    this.chooseRandomLetters()
+    this.$emit('setNewTiles', chooseRandomLetters(this.tiles, this.currentTiles))
     this.$emit('returnExchangedTiles', this.tilesToExchange)
     this.tilesToExchange = []
-  }
-
-  chooseRandomLetters (): void {
-    let randomIndex = 0
-    const newSetOfTiles: TileModel[] = JSON.parse(JSON.stringify(this.currentTiles))
-
-    while (newSetOfTiles.length <= 6) {
-      randomIndex = Math.floor(Math.random() * (this.tiles.length - 0))
-      if (this.tiles[randomIndex].amount > 0) {
-        newSetOfTiles.push(this.tiles[randomIndex])
-      }
-    }
-
-    this.$emit('setNewTiles', newSetOfTiles)
   }
 }
 </script>
