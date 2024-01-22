@@ -302,6 +302,10 @@ export default class Board extends Vue {
       }
     }
 
+    if (wordOrientation === 'both') {
+      letterId++
+    }
+
     if (letterId - 15 >= 0 && (wordOrientation === 'vertical' || wordOrientation === 'both')) {
       letterId -= 15
 
