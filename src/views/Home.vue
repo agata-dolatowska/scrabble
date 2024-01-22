@@ -252,8 +252,19 @@ export default class Game extends Vue {
   }
 
   createAvailableTiles (): void {
+    const chosenLetters = chooseRandomLetters(this.tiles)
+    let tileId = 0
+
     for (const player of this.players) {
-      player.availableTiles.push(...chooseRandomLetters(this.tiles))
+      player.availableTiles.push(...chosenLetters)
+    }
+
+    for (const chosenTile of chosenLetters) {
+      tileId = this.tiles.findIndex(tile => tile.letter.toUpperCase() === chosenTile.letter.toUpperCase())
+
+      if (tileId >= 0) {
+        this.tiles[tileId].amount = this.tiles[tileId].amount - 1
+      }
     }
   }
 
