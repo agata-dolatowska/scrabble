@@ -107,8 +107,8 @@ export default class Board extends Vue {
       this.blockDelete()
       this.checkAdditionalDuplicates(currentTurn.typedLetters)
       currentTurn.savedWords.push(this.typedWord, ...this.additionalWords)
-      this.$emit('addTurn', currentTurn)
       this.$emit('updateTiles', currentTurn.typedLetters)
+      this.$emit('addTurn', currentTurn)
     } else {
       this.removeWordFromBoard()
     }
@@ -300,6 +300,10 @@ export default class Board extends Vue {
           wordOrientation = 'horizontal'
         }
       }
+    }
+
+    if (wordOrientation === 'both') {
+      letterId++
     }
 
     if (letterId - 15 >= 0 && (wordOrientation === 'vertical' || wordOrientation === 'both')) {

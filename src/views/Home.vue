@@ -29,6 +29,7 @@ import doubleLetterSquares from '@/game-assets/board-squares/double-letter'
 import doubleWordSquares from '@/game-assets/board-squares/double-word'
 import tripleLetterSquares from '@/game-assets/board-squares/triple-letter'
 import tripleWordSquares from '@/game-assets/board-squares/triple-word'
+import chooseRandomLetters from '@/utils/rack'
 
 @Component({
   components: {
@@ -40,7 +41,6 @@ import tripleWordSquares from '@/game-assets/board-squares/triple-word'
 })
 export default class Game extends Vue {
   private squares: SquareModel[] = []
-  private currentTiles: TileModel[] = []
   private tiles: TileModel[] = []
   private tilesUpdate = 0
   private players: PlayerModel[] = []
@@ -49,7 +49,8 @@ export default class Game extends Vue {
   private clearTypedWord = false
 
   get gameSaved () {
-    return localStorage.getItem('scrabble') !== null
+    return localStorage.getItem('scrabble') !== null &&
+    this.players.length
   }
 
   get someUserHasPoints () {
@@ -70,6 +71,14 @@ export default class Game extends Vue {
     return words
   }
 
+  get currentTiles () {
+    if (this.players.length > 0) {
+      return this.players[this.currentPlayer].availableTiles
+    } else {
+      return []
+    }
+  }
+
   mounted () {
     if (this.gameSaved) {
       this.startSavedGame()
@@ -83,7 +92,6 @@ export default class Game extends Vue {
   saveGame () {
     localStorage.setItem('scrabble', JSON.stringify({
       squares: this.squares,
-      currentTiles: this.currentTiles,
       tiles: this.tiles,
       players: this.players,
       currentPlayer: this.currentPlayer
@@ -95,7 +103,6 @@ export default class Game extends Vue {
     const savedGame = JSON.parse(localStorage.getItem('scrabble') as string)
 
     this.squares = savedGame.squares
-    this.currentTiles = savedGame.currentTiles
     this.tiles = savedGame.tiles
     this.players = savedGame.players
     this.currentPlayer = savedGame.currentPlayer
@@ -109,6 +116,7 @@ export default class Game extends Vue {
   updatePlayers (players: PlayerModel[]) {
     this.players = players
     this.playersSettingsVisible = false
+    this.createAvailableTiles()
   }
 
   startNewGame (): void {
@@ -117,7 +125,6 @@ export default class Game extends Vue {
     this.tiles = []
     this.currentPlayer = 0
     this.players = []
-    this.currentTiles = []
     this.createSquares()
     this.createNewSetOfTiles()
     this.playersSettingsVisible = true
@@ -155,6 +162,7 @@ export default class Game extends Vue {
     this.players[this.currentPlayer].score.push(turnWithPoints)
     this.setTotalScore()
     this.setNextPlayer()
+    this.fillAvailableTiles()
   }
 
   setTotalScore () {
@@ -226,9 +234,18 @@ export default class Game extends Vue {
     }
   }
 
+  fillAvailableTiles () {
+    const newTiles = chooseRandomLetters(this.tiles, this.players[this.currentPlayer].availableTiles)
+    this.players[this.currentPlayer].availableTiles = [...newTiles]
+  }
+
   skipTurn () {
     this.clearTypedWord = true
-    this.setNextPlayer()
+    this.addTurn(new TurnModel())
+
+    if (this.players[this.currentPlayer].totalScore === 0 && this.players[this.currentPlayer].availableTiles.length === 0) {
+      this.tilesUpdate++
+    }
   }
 
   createNewSetOfTiles (): void {
@@ -240,10 +257,27 @@ export default class Game extends Vue {
     }
   }
 
-  setNewTiles (tiles: TileModel[]): void {
+  createAvailableTiles (): void {
+    let chosenLetters: TileModel[] = []
     let tileId = 0
 
-    this.currentTiles = tiles
+    for (const player of this.players) {
+      chosenLetters = chooseRandomLetters(this.tiles)
+      player.availableTiles.push(...chosenLetters)
+    }
+
+    for (const chosenTile of chosenLetters) {
+      tileId = this.tiles.findIndex(tile => tile.letter.toUpperCase() === chosenTile.letter.toUpperCase())
+
+      if (tileId >= 0) {
+        this.tiles[tileId].amount = this.tiles[tileId].amount - 1
+      }
+    }
+  }
+
+  setNewTiles (tiles: TileModel[]): void {
+    let tileId = 0
+    this.players[this.currentPlayer].availableTiles = tiles
 
     for (const currentTile of this.currentTiles) {
       tileId = this.tiles.findIndex(tile => tile.letter.toUpperCase() === currentTile.letter.toUpperCase())
@@ -252,16 +286,24 @@ export default class Game extends Vue {
         this.tiles[tileId].amount = this.tiles[tileId].amount - 1
       }
     }
+
+    if (this.players[this.currentPlayer].totalScore === 0 && this.players[this.currentPlayer].availableTiles.length === 0) {
+      this.tilesUpdate++
+    }
   }
 
   updateTiles (typedLetters: SquareModel[]): void {
     let currentTileId = 0
+    let blankId = 0
 
     for (const letter of typedLetters) {
-      currentTileId = this.currentTiles.findIndex(tile => tile.letter.toUpperCase() === letter.letter.toUpperCase())
+      currentTileId = this.players[this.currentPlayer].availableTiles.findIndex(tile => tile.letter.toUpperCase() === letter.letter.toUpperCase())
 
       if (currentTileId >= 0) {
-        this.currentTiles.splice(currentTileId, 1)
+        this.players[this.currentPlayer].availableTiles.splice(currentTileId, 1)
+      } else {
+        blankId = this.players[this.currentPlayer].availableTiles.findIndex(tile => tile.letter.toUpperCase() === '')
+        this.players[this.currentPlayer].availableTiles.splice(blankId, 1)
       }
     }
 
@@ -281,7 +323,8 @@ export default class Game extends Vue {
       this.tiles[tileId].amount++
     }
 
-    this.setNextPlayer()
+    this.clearTypedWord = true
+    this.skipTurn()
   }
 }
 </script>

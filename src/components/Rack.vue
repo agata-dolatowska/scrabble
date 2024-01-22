@@ -2,7 +2,7 @@
   div
     <p v-if="exchangeActive">Select letters to exchange</p>
     .rack-container
-        <Tile v-for="tile in currentTiles" :tile="tile" :exchangeActive="exchangeActive" @addToExchange="addToExchange" @removeFromExchange="removeFromExchange"/>
+        <Tile v-for="(tile, id) in currentTiles" :id="id" :tile="tile" :exchangeActive="exchangeActive" :clearExchange="clearExchange" @addToExchange="addToExchange" @removeFromExchange="removeFromExchange"/>
     <Button @click="$emit('skipTurn')">Skip turn</Button>
     <button v-if="!exchangeActive" @click="exchangeActive = true">Exchange</button>
     <button v-if="exchangeActive" @click="cancelExchange">Cancel</button>
@@ -15,6 +15,7 @@ import Component from 'vue-class-component'
 import { Prop } from 'vue-property-decorator'
 import Tile from '@/components/Tile.vue'
 import TileModel from '@/models/Tile'
+import chooseRandomLetters from '@/utils/rack'
 
 @Component({
   components: {
@@ -26,10 +27,7 @@ export default class Rack extends Vue {
   @Prop() currentTiles!: TileModel[]
   private exchangeActive = false
   private tilesToExchange: TileModel[] = []
-
-  mounted () {
-    this.chooseRandomLetters()
-  }
+  private clearExchange = 0
 
   addToExchange (tile: TileModel): void {
     this.tilesToExchange.push(tile)
@@ -37,19 +35,14 @@ export default class Rack extends Vue {
 
   removeFromExchange (tileToRemove: TileModel): void {
     const tileId = this.tilesToExchange.findIndex(tile => tile.letter.toUpperCase() === tileToRemove.letter.toUpperCase())
-    const tileRackId = this.currentTiles.findIndex(tile => tile.letter.toUpperCase() === tileToRemove.letter.toUpperCase())
 
     this.tilesToExchange.splice(tileId, 1)
-    this.currentTiles[tileRackId].chosenForExchange = false
+    this.clearExchange++
   }
 
   cancelExchange () {
     this.exchangeActive = false
-    this.tilesToExchange = []
-
-    for (const tile of this.currentTiles) {
-      tile.chosenForExchange = false
-    }
+    this.clearExchange++
   }
 
   acceptExchange (): void {
@@ -61,23 +54,10 @@ export default class Rack extends Vue {
     }
 
     this.exchangeActive = false
-    this.chooseRandomLetters()
+    this.$emit('setNewTiles', chooseRandomLetters(this.tiles, this.currentTiles))
     this.$emit('returnExchangedTiles', this.tilesToExchange)
     this.tilesToExchange = []
-  }
-
-  chooseRandomLetters (): void {
-    let randomIndex = 0
-    const newSetOfTiles: TileModel[] = JSON.parse(JSON.stringify(this.currentTiles))
-
-    while (newSetOfTiles.length <= 6) {
-      randomIndex = Math.floor(Math.random() * (this.tiles.length - 0))
-      if (this.tiles[randomIndex].amount > 0) {
-        newSetOfTiles.push(this.tiles[randomIndex])
-      }
-    }
-
-    this.$emit('setNewTiles', newSetOfTiles)
+    this.clearExchange++
   }
 }
 </script>

@@ -1,18 +1,27 @@
 <template lang="pug">
-    .tile(:draggable="!exchangeActive && !isBlank" @dragstart="startDrag($event, tile)" :class="{'exchange-mode': exchangeActive, exchange: tile.chosenForExchange && exchangeActive, blank: isBlank}" @click="chooseForExchange")
+    .tile(:draggable="!exchangeActive && !isBlank" @dragstart="startDrag($event, tile)" :class="{'exchange-mode': exchangeActive, exchange: chosenForExchange && exchangeActive, blank: isBlank}" @click="chooseForExchange")
         p.tile-letter {{ tile.letter }}
         p.tile-points {{ tile.points }}
 </template>
 
 <script lang="ts">
 import Vue from 'vue'
-import { Prop, Component } from 'vue-property-decorator'
+import { Prop, Component, Watch } from 'vue-property-decorator'
 import TileModel from '@/models/Tile'
 
 @Component
 export default class Tile extends Vue {
     @Prop() tile!: TileModel
     @Prop() exchangeActive!: boolean
+    @Prop() id!: number
+    @Prop() clearExchange!: number
+
+    @Watch('clearExchange')
+    private clearExchangeState () {
+      this.chosenForExchange = false
+    }
+
+    chosenForExchange = false
 
     get isBlank () {
       return this.tile.letter === ''
@@ -20,9 +29,9 @@ export default class Tile extends Vue {
 
     chooseForExchange (): void {
       if (this.exchangeActive) {
-        this.tile.chosenForExchange = !this.tile.chosenForExchange
+        this.chosenForExchange = !this.chosenForExchange
 
-        if (this.tile.chosenForExchange) {
+        if (this.chosenForExchange) {
           this.$emit('addToExchange', this.tile)
         } else {
           this.$emit('removeFromExchange', this.tile)
