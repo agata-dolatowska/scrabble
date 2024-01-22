@@ -162,6 +162,7 @@ export default class Game extends Vue {
     this.players[this.currentPlayer].score.push(turnWithPoints)
     this.setTotalScore()
     this.setNextPlayer()
+    this.fillAvailableTiles()
   }
 
   setTotalScore () {
@@ -233,6 +234,11 @@ export default class Game extends Vue {
     }
   }
 
+  fillAvailableTiles () {
+    const newTiles = chooseRandomLetters(this.tiles, this.players[this.currentPlayer].availableTiles)
+    this.players[this.currentPlayer].availableTiles = [...newTiles]
+  }
+
   skipTurn () {
     this.clearTypedWord = true
     this.addTurn(new TurnModel())
@@ -252,10 +258,11 @@ export default class Game extends Vue {
   }
 
   createAvailableTiles (): void {
-    const chosenLetters = chooseRandomLetters(this.tiles)
+    let chosenLetters: TileModel[] = []
     let tileId = 0
 
     for (const player of this.players) {
+      chosenLetters = chooseRandomLetters(this.tiles)
       player.availableTiles.push(...chosenLetters)
     }
 
