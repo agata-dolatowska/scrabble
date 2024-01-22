@@ -294,12 +294,16 @@ export default class Game extends Vue {
 
   updateTiles (typedLetters: SquareModel[]): void {
     let currentTileId = 0
+    let blankId = 0
 
     for (const letter of typedLetters) {
       currentTileId = this.players[this.currentPlayer].availableTiles.findIndex(tile => tile.letter.toUpperCase() === letter.letter.toUpperCase())
 
       if (currentTileId >= 0) {
         this.players[this.currentPlayer].availableTiles.splice(currentTileId, 1)
+      } else {
+        blankId = this.players[this.currentPlayer].availableTiles.findIndex(tile => tile.letter.toUpperCase() === '')
+        this.players[this.currentPlayer].availableTiles.splice(blankId, 1)
       }
     }
 
