@@ -301,7 +301,7 @@ export default class Game extends Vue {
       this.tiles[tileId].amount++
     }
 
-    this.setNextPlayer()
+    this.skipTurn()
   }
 }
 </script>
