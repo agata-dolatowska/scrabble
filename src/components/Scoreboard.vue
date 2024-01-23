@@ -3,7 +3,7 @@
         table
             thead
                 tr
-                    th turn
+                    th {{ $t('turn') }}
                     th(v-for="player in players") {{ player.name }}
             tbody(v-if="someUserHasPoints")
                 tr
@@ -16,7 +16,7 @@
                             td {{ turn.points }}
             tfoot
                 tr
-                  td total
+                  td {{ $t('total') }}
                   td(v-for="player in players") {{ player.totalScore }}
 </template>
 <script lang="ts">

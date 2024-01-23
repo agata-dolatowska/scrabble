@@ -4,7 +4,23 @@
         "firstWordTooShort": "Word must be at least two letters long",
         "wordTooShort": "Type at least one letter",
         "wordTooLong": "You can type up to seven letters",
-        "orientation": "Word must be horizontal or vertical"
+        "orientation": "Word must be horizontal or vertical",
+        "namesCantBeEmpty": "Names can't be empty"
     },
-    "close": "close"
+    "close": "close",
+    "checkWord": "check word",
+    "delete": "delete",
+    "addPlayer": "Add player",
+    "savePlayers": "Save players",
+    "players": "Players",
+    "addPlayersName": "add players name",
+    "selectLettersToExchange": "Select letters to exchange",
+    "skipTurn": "Skip turn",
+    "exchange": "Exchange",
+    "cancel": "Cancel",
+    "acceptExchange": "Accept exchange",
+    "turn": "turn",
+    "total": "total",
+    "currentPlayer": "Current player",
+    "startNewGame": "Start new game"
 }

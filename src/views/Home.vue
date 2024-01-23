@@ -4,9 +4,9 @@
     <div class="game-container" v-if="!playersSettingsVisible">
       <div>
         <Board :squares="squares" :currentTiles="currentTiles" :clearTypedWord="clearTypedWord" :savedWords="savedWords" @addTurn="addTurn" @updateTiles="updateTiles" @removeTypedLetter="removeTypedLetter" @stopClearLastWord="clearTypedWord = false"/>
-        p Current player {{ currentPlayerName }}
+        p {{ $t('currentPlayer') }} {{ currentPlayerName }}
         <Rack :key="tilesUpdate" v-if="tiles.length > 0" :tiles="tiles" :currentTiles="currentTiles" @setNewTiles="setNewTiles" @returnExchangedTiles="returnExchangedTiles" @skipTurn="skipTurn"/>
-        <button v-if="gameSaved || someUserHasPoints" @click="startNewGame">Start new game</button>
+        <button v-if="gameSaved || someUserHasPoints" @click="startNewGame">{{ $t('startNewGame') }}</button>
       </div>
       <div>
         <Scoreboard :players="players" />

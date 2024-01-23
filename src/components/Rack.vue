@@ -1,12 +1,12 @@
 <template lang="pug">
   div
-    <p v-if="exchangeActive">Select letters to exchange</p>
+    <p v-if="exchangeActive">{{  $t('selectLettersToExchange') }}</p>
     .rack-container
         <Tile v-for="(tile, id) in currentTiles" :id="id" :tile="tile" :exchangeActive="exchangeActive" :clearExchange="clearExchange" @addToExchange="addToExchange" @removeFromExchange="removeFromExchange"/>
-    <Button @click="$emit('skipTurn')">Skip turn</Button>
-    <button v-if="!exchangeActive" @click="exchangeActive = true">Exchange</button>
-    <button v-if="exchangeActive" @click="cancelExchange">Cancel</button>
-    <button v-if="exchangeActive" :disabled="tilesToExchange.length === 0" @click="acceptExchange">Accept exchange</button>
+    <Button @click="$emit('skipTurn')">{{ $t('skipTurn') }}</Button>
+    <button v-if="!exchangeActive" @click="exchangeActive = true">{{ $t('exchange') }}</button>
+    <button v-if="exchangeActive" @click="cancelExchange">{{ $t('cancel') }}</button>
+    <button v-if="exchangeActive" :disabled="tilesToExchange.length === 0" @click="acceptExchange">{{ $t('acceptExchange') }}</button>
 </template>
 
 <script lang="ts">
