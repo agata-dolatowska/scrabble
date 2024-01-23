@@ -2,7 +2,7 @@
     .message-container
       .message-wrapper
         p {{ message }}
-        button(@click="$emit('close')") {{texts.close }}
+        button(@click="$emit('close')") {{ $t('close') }}
 </template>
 
 <script lang="ts">
@@ -12,10 +12,6 @@ import { Component, Prop } from 'vue-property-decorator'
 @Component
 export default class ErrorMessage extends Vue {
   @Prop({ required: true }) message!: string
-
-  get texts () {
-    return this.$store.state.lang.texts
-  }
 }
 </script>
 <style lang="scss" scoped>
