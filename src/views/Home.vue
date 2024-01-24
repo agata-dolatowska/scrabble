@@ -32,6 +32,7 @@ import doubleWordSquares from '@/game-assets/board-squares/double-word'
 import tripleLetterSquares from '@/game-assets/board-squares/triple-letter'
 import tripleWordSquares from '@/game-assets/board-squares/triple-word'
 import chooseRandomLetters from '@/utils/rack'
+import { Watch } from 'vue-property-decorator'
 
 @Component({
   components: {
@@ -52,6 +53,7 @@ export default class Game extends Vue {
   private clearTypedWord = false
   private confirmOpen = false
   private confirmMessage = ''
+  private gameFinished = false
 
   get gameSaved () {
     return localStorage.getItem('scrabble') !== null &&
@@ -84,6 +86,26 @@ export default class Game extends Vue {
     }
   }
 
+  get availableTiles () {
+    return this.tiles.reduce((sum, tile) => sum + tile.amount, 0)
+  }
+
+  get playerWithEmptyRackExists () {
+    return this.players.some(player => player.availableTiles.length === 0)
+  }
+
+  @Watch('playerWithEmptyRackExists')
+  checkAvailableTiles () {
+    if (this.availableTiles === 0 &&
+      this.playerWithEmptyRackExists) {
+      this.finishGame()
+    }
+  }
+
+  finishGame () {
+    this.gameFinished = true
+  }
+
   checkSkipTurnsAmount () {
     const twoTurnsPlayed = this.players[this.players.length - 1].score.length >= 2
     const lastTurns = []
@@ -100,7 +122,7 @@ export default class Game extends Vue {
     turnsSkippedIn2LastMoves = lastTurns.filter(turn => turn.skipped).length
 
     if (turnsSkippedIn2LastMoves === skippedTurnsForCurrentGame) {
-      console.log('koniec gry!')
+      this.finishGame()
     }
   }
 
@@ -296,13 +318,13 @@ export default class Game extends Vue {
     for (const player of this.players) {
       chosenLetters = chooseRandomLetters(this.tiles)
       player.availableTiles.push(...chosenLetters)
-    }
 
-    for (const chosenTile of chosenLetters) {
-      tileId = this.tiles.findIndex(tile => tile.letter.toUpperCase() === chosenTile.letter.toUpperCase())
+      for (const chosenTile of chosenLetters) {
+        tileId = this.tiles.findIndex(tile => tile.letter.toUpperCase() === chosenTile.letter.toUpperCase())
 
-      if (tileId >= 0) {
-        this.tiles[tileId].amount = this.tiles[tileId].amount - 1
+        if (tileId >= 0) {
+          this.tiles[tileId].amount = this.tiles[tileId].amount - 1
+        }
       }
     }
   }
