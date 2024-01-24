@@ -102,10 +102,6 @@ export default class Game extends Vue {
     }
   }
 
-  finishGame () {
-    this.gameFinished = true
-  }
-
   checkSkipTurnsAmount () {
     const twoTurnsPlayed = this.players[this.players.length - 1].score.length >= 2
     const lastTurns = []
@@ -384,6 +380,17 @@ export default class Game extends Vue {
   newGameConfirmation () {
     this.confirmOpen = true
     this.confirmMessage = this.$t('newGameQuestion') as string
+  }
+
+  finishGame () {
+    this.gameFinished = true
+    this.blockAllSquares()
+  }
+
+  blockAllSquares () {
+    for (const square of this.squares) {
+      square.isBlocked = true
+    }
   }
 }
 </script>

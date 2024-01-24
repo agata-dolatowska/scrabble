@@ -4,8 +4,7 @@ export default class Square {
     public letter = '';
     public row: number;
     public column: number;
-    public isDisabled = false;
-    public canBeRemoved = true;
+    public isBlocked = false
 
     constructor (id: string, row: number, column: number) {
       this.id = id

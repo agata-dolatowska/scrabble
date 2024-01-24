@@ -1,5 +1,5 @@
 <template lang="pug">
-  input(type="text" class="square" v-model="square.letter" :class="[square.bonus]" :disabled="!square.canBeRemoved" @input="changeLetter" @dragover="allowDrop($event)" @drop="dropTile($event)" @keyup="detectBackspace($event)")
+  input(type="text" class="square" v-model="square.letter" :class="[square.bonus]" :disabled="square.isBlocked" @input="changeLetter" @dragover="allowDrop($event)" @drop="dropTile($event)" @keyup="detectBackspace($event)")
 </template>
 <script lang="ts">
 import Vue from 'vue'
@@ -16,7 +16,7 @@ export default class Square extends Vue {
   }
 
   dropTile (e: any): void {
-    if (this.square.canBeRemoved) {
+    if (!this.square.isBlocked) {
       e.preventDefault()
       this.square.letter = e.dataTransfer.getData('letter')
       this.$emit('addLetterToWord', this.square)
