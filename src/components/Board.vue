@@ -2,7 +2,7 @@
   div
     div.board-container
       <Square v-for="(square, i) in squares" :ref="'square' + i" :key="square.id" :square="square" @addLetterToWord="addLetterToWord" @removeEmptyLetter="removeEmptyLetter" @goToPreviousSquare="goToPreviousSquare"/>
-    button(@click="checkWord" :disabled="typedWord.letters.length === 0") check word
+    button(@click="checkWord" :disabled="typedWord.letters.length === 0") {{ $t('checkWord') }}
     <ErrorMessage v-if="errorOpen" :message="errorMessage" @close="errorOpen = false"/>
 </template>
 <script lang="ts">
@@ -32,10 +32,6 @@ export default class Board extends Vue {
   private maxTypedLetters = 7
   private errorOpen = false
   private errorMessage = ''
-
-  get texts () {
-    return this.$store.state.lang.texts
-  }
 
   get wordCount () {
     return this.savedWords.length
@@ -252,26 +248,26 @@ export default class Board extends Vue {
 
     if (this.wordCount === 0) {
       if (this.squares[middleSquareId].letter === '') {
-        this.errorMessage = this.texts.errors.emptyCenter
+        this.errorMessage = this.$t('errors.emptyCenter') as string
         this.errorOpen = true
         wordOk = false
       }
 
       if (this.typedWord.letters.length < 2) {
-        this.errorMessage = this.texts.errors.firstWordTooShort
+        this.errorMessage = this.$t('errors.firstWordTooShort') as string
         this.errorOpen = true
         wordOk = false
       }
     }
 
     if (this.typedWord.letters.length > this.maxTypedLetters) {
-      this.errorMessage = this.texts.errors.wordTooLong
+      this.errorMessage = this.$t('errors.wordTooLong') as string
       this.errorOpen = true
       wordOk = false
     }
 
     if (this.wordCount > 0 && this.typedWord.letters.length < 1) {
-      this.errorMessage = this.texts.errors.wordTooShort
+      this.errorMessage = this.$t('errors.wordTooShort') as string
       this.errorOpen = true
       wordOk = false
     }
@@ -437,7 +433,7 @@ export default class Board extends Vue {
     (!wordIsHorizontal && !wordIsVertical)
       ) {
         this.typedWord.orientation = ''
-        this.errorMessage = this.texts.errors.orientation
+        this.errorMessage = this.$t('errors.orientation') as string
         this.errorOpen = true
         wordOrientationOk = false
       }

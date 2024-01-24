@@ -2,7 +2,8 @@
     .message-container
       .message-wrapper
         p {{ message }}
-        button(@click="$emit('close')") {{ $t('close') }}
+        button(@click="$emit('accept')") {{ $t('ok') }}
+        button(@click="$emit('close')") {{ $t('cancel') }}
 </template>
 
 <script lang="ts">
@@ -10,7 +11,7 @@ import Vue from 'vue'
 import { Component, Prop } from 'vue-property-decorator'
 
 @Component
-export default class ErrorMessage extends Vue {
+export default class ConfirmMessage extends Vue {
   @Prop({ required: true }) message!: string
 }
 </script>

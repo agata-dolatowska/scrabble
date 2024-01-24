@@ -1,12 +1,12 @@
 <template lang="pug">
     .players-container
-        p Players
+        p {{ $t('players') }}
         .player(v-for="player in players" :key="player.id")
-            <Input v-model="player.name" placeholder="add players name" :class="{'error': player.name === '' && showEmptyNames}" />
-            <Button v-if="players.length > 1" @click="removePlayer(player.id)">delete</Button>
-        <Button @click="addPlayer" :disabled="players.length === maxPlayers">Add player</Button>
-        <Button @click="savePlayers">Save players</Button>
-        <ErrorMessage v-if="errorOpen" message="Names can't be empty" @close="errorOpen = false"/>
+            <Input v-model="player.name" :placeholder="$t('addPlayersName')" :class="{'error': player.name === '' && showEmptyNames}" />
+            <Button v-if="players.length > 1" @click="removePlayer(player.id)">{{ $t('delete') }}</Button>
+        <Button @click="addPlayer" :disabled="players.length === maxPlayers">{{ $t('addPlayer') }}</Button>
+        <Button @click="savePlayers">{{ $t('savePlayers') }}</Button>
+        <ErrorMessage v-if="errorOpen" :message="errorMessage" @close="errorOpen = false"/>
 </template>
 <script lang="ts">
 import Vue from 'vue'
@@ -26,6 +26,7 @@ export default class PlayersSettings extends Vue {
     private maxPlayers = 4
     private errorOpen = false
     private showEmptyNames = false
+    errorMessage = ''
 
     mounted () {
       this.addPlayer()
@@ -50,6 +51,7 @@ export default class PlayersSettings extends Vue {
     private savePlayers () {
       if (this.playerHasEmptyName()) {
         this.showEmptyNames = true
+        this.errorMessage = this.$t('errors.namesCantBeEmpty') as string
         this.errorOpen = true
         return
       }
