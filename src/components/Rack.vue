@@ -3,10 +3,11 @@
     <p v-if="exchangeActive">{{  $t('selectLettersToExchange') }}</p>
     .rack-container
         <Tile v-for="(tile, id) in currentTiles" :id="id" :tile="tile" :exchangeActive="exchangeActive" :clearExchange="clearExchange" @addToExchange="addToExchange" @removeFromExchange="removeFromExchange"/>
-    <Button @click="$emit('skipTurn')">{{ $t('skipTurn') }}</Button>
+    <Button @click="skipConfirmation">{{ $t('skipTurn') }}</Button>
     <button v-if="!exchangeActive" @click="exchangeActive = true">{{ $t('exchange') }}</button>
     <button v-if="exchangeActive" @click="cancelExchange">{{ $t('cancel') }}</button>
     <button v-if="exchangeActive" :disabled="tilesToExchange.length === 0" @click="acceptExchange">{{ $t('acceptExchange') }}</button>
+    <ConfirmMessage v-if="confirmOpen" :message="confirmMessage" @close="confirmOpen = false" @accept="$emit('skipTurn'), confirmOpen = false"/>
 </template>
 
 <script lang="ts">
@@ -16,10 +17,12 @@ import { Prop } from 'vue-property-decorator'
 import Tile from '@/components/Tile.vue'
 import TileModel from '@/models/Tile'
 import chooseRandomLetters from '@/utils/rack'
+import ConfirmMessage from './ConfirmMessage.vue'
 
 @Component({
   components: {
-    Tile
+    Tile,
+    ConfirmMessage
   }
 })
 export default class Rack extends Vue {
@@ -28,9 +31,16 @@ export default class Rack extends Vue {
   private exchangeActive = false
   private tilesToExchange: TileModel[] = []
   private clearExchange = 0
+  private confirmOpen = false
+  private confirmMessage = ''
 
   addToExchange (tile: TileModel): void {
     this.tilesToExchange.push(tile)
+  }
+
+  skipConfirmation () {
+    this.confirmMessage = this.$t('skipQuestion') as string
+    this.confirmOpen = true
   }
 
   removeFromExchange (tileToRemove: TileModel): void {

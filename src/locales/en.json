@@ -22,5 +22,8 @@
     "turn": "turn",
     "total": "total",
     "currentPlayer": "Current player",
-    "startNewGame": "Start new game"
+    "startNewGame": "Start new game",
+    "ok": "0k",
+    "skipQuestion": "Are you sure you want to skip this turn?",
+    "newGameQuestion": "Are you sure you want to start new game?"
 }

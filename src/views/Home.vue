@@ -6,11 +6,12 @@
         <Board :squares="squares" :currentTiles="currentTiles" :clearTypedWord="clearTypedWord" :savedWords="savedWords" @addTurn="addTurn" @updateTiles="updateTiles" @removeTypedLetter="removeTypedLetter" @stopClearLastWord="clearTypedWord = false"/>
         p {{ $t('currentPlayer') }} {{ currentPlayerName }}
         <Rack :key="tilesUpdate" v-if="tiles.length > 0" :tiles="tiles" :currentTiles="currentTiles" @setNewTiles="setNewTiles" @returnExchangedTiles="returnExchangedTiles" @skipTurn="skipTurn"/>
-        <button v-if="gameSaved || someUserHasPoints" @click="startNewGame">{{ $t('startNewGame') }}</button>
+        <button v-if="gameSaved || someUserHasPoints" @click="newGameConfirmation">{{ $t('startNewGame') }}</button>
       </div>
       <div>
         <Scoreboard :players="players" />
       </div>
+      <ConfirmMessage v-if="confirmOpen" :message="confirmMessage" @close="confirmOpen = false" @accept="startNewGame(), confirmOpen = false"/>
     </div>
 </template>
 <script lang="ts">
@@ -20,6 +21,7 @@ import Board from '@/components/Board.vue'
 import Rack from '@/components/Rack.vue'
 import Scoreboard from '@/components/Scoreboard.vue'
 import PlayersSettings from '@/components/PlayersSettings.vue'
+import ConfirmMessage from '@/components/ConfirmMessage.vue'
 import TurnModel from '@/models/Turn'
 import TileModel from '@/models/Tile'
 import SquareModel from '@/models/Square'
@@ -36,7 +38,8 @@ import chooseRandomLetters from '@/utils/rack'
     Board,
     Scoreboard,
     Rack,
-    PlayersSettings
+    PlayersSettings,
+    ConfirmMessage
   }
 })
 export default class Game extends Vue {
@@ -47,6 +50,8 @@ export default class Game extends Vue {
   private playersSettingsVisible = true
   private currentPlayer = 0
   private clearTypedWord = false
+  private confirmOpen = false
+  private confirmMessage = ''
 
   get gameSaved () {
     return localStorage.getItem('scrabble') !== null &&
@@ -325,6 +330,11 @@ export default class Game extends Vue {
 
     this.clearTypedWord = true
     this.skipTurn()
+  }
+
+  newGameConfirmation () {
+    this.confirmOpen = true
+    this.confirmMessage = this.$t('newGameQuestion') as string
   }
 }
 </script>
