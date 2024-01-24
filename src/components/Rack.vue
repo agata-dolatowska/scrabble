@@ -7,7 +7,7 @@
     <button v-if="!exchangeActive" @click="exchangeActive = true">{{ $t('exchange') }}</button>
     <button v-if="exchangeActive" @click="cancelExchange">{{ $t('cancel') }}</button>
     <button v-if="exchangeActive" :disabled="tilesToExchange.length === 0" @click="acceptExchange">{{ $t('acceptExchange') }}</button>
-    <ConfirmMessage v-if="confirmOpen" :message="confirmMessage" @close="confirmOpen = false" @accept="$emit('skipTurn'), confirmOpen = false"/>
+    <ConfirmMessage v-if="confirmOpen" :message="confirmMessage" @close="confirmOpen = false" @accept="$emit('skipTurn', true), confirmOpen = false"/>
 </template>
 
 <script lang="ts">

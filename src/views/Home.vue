@@ -5,7 +5,7 @@
       <div>
         <Board :squares="squares" :currentTiles="currentTiles" :clearTypedWord="clearTypedWord" :savedWords="savedWords" @addTurn="addTurn" @updateTiles="updateTiles" @removeTypedLetter="removeTypedLetter" @stopClearLastWord="clearTypedWord = false"/>
         p {{ $t('currentPlayer') }} {{ currentPlayerName }}
-        <Rack :key="tilesUpdate" v-if="tiles.length > 0" :tiles="tiles" :currentTiles="currentTiles" @setNewTiles="setNewTiles" @returnExchangedTiles="returnExchangedTiles" @skipTurn="skipTurn"/>
+        <Rack :key="tilesUpdate" v-if="tiles.length > 0" :tiles="tiles" :currentTiles="currentTiles" @setNewTiles="setNewTiles" @returnExchangedTiles="returnExchangedTiles" @skipTurn="createEmptyTurn"/>
         <button v-if="gameSaved || someUserHasPoints" @click="newGameConfirmation">{{ $t('startNewGame') }}</button>
       </div>
       <div>
@@ -81,6 +81,26 @@ export default class Game extends Vue {
       return this.players[this.currentPlayer].availableTiles
     } else {
       return []
+    }
+  }
+
+  checkSkipTurnsAmount () {
+    const twoTurnsPlayed = this.players[this.players.length - 1].score.length >= 2
+    const lastTurns = []
+    const maxSkippedTurns = 2
+    const skippedTurnsForCurrentGame = this.players.length * maxSkippedTurns
+    let turnsSkippedIn2LastMoves = 0
+
+    if (twoTurnsPlayed) {
+      for (const player of this.players) {
+        lastTurns.push(...player.score.slice(-2))
+      }
+    }
+
+    turnsSkippedIn2LastMoves = lastTurns.filter(turn => turn.skipped).length
+
+    if (turnsSkippedIn2LastMoves === skippedTurnsForCurrentGame) {
+      console.log('koniec gry!')
     }
   }
 
@@ -244,12 +264,19 @@ export default class Game extends Vue {
     this.players[this.currentPlayer].availableTiles = [...newTiles]
   }
 
-  skipTurn () {
+  createEmptyTurn (skipped = false) {
+    const newTurn = new TurnModel()
+    newTurn.skipped = skipped
+
     this.clearTypedWord = true
-    this.addTurn(new TurnModel())
+    this.addTurn(newTurn)
 
     if (this.players[this.currentPlayer].totalScore === 0 && this.players[this.currentPlayer].availableTiles.length === 0) {
       this.tilesUpdate++
+    }
+
+    if (skipped) {
+      this.checkSkipTurnsAmount()
     }
   }
 
@@ -329,7 +356,7 @@ export default class Game extends Vue {
     }
 
     this.clearTypedWord = true
-    this.skipTurn()
+    this.createEmptyTurn()
   }
 
   newGameConfirmation () {
