@@ -25,5 +25,6 @@
     "startNewGame": "Start new game",
     "ok": "0k",
     "skipQuestion": "Are you sure you want to skip this turn?",
-    "newGameQuestion": "Are you sure you want to start new game?"
+    "newGameQuestion": "Are you sure you want to start new game?",
+    "congratulations": "Congratulations"
 }

@@ -3,12 +3,13 @@
     <PlayersSettings @updatePlayers="updatePlayers" v-if="playersSettingsVisible" />
     <div class="game-container" v-if="!playersSettingsVisible">
       <div>
-        <Board :squares="squares" :currentTiles="currentTiles" :clearTypedWord="clearTypedWord" :savedWords="savedWords" @addTurn="addTurn" @updateTiles="updateTiles" @removeTypedLetter="removeTypedLetter" @stopClearLastWord="clearTypedWord = false"/>
-        p {{ $t('currentPlayer') }} {{ currentPlayerName }}
-        <Rack :key="tilesUpdate" v-if="tiles.length > 0" :tiles="tiles" :currentTiles="currentTiles" @setNewTiles="setNewTiles" @returnExchangedTiles="returnExchangedTiles" @skipTurn="skipTurn"/>
+        <Board :squares="squares" :currentTiles="currentTiles" :clearTypedWord="clearTypedWord" :savedWords="savedWords" :gameFinished="gameFinished" @addTurn="addTurn" @updateTiles="updateTiles" @removeTypedLetter="removeTypedLetter" @stopClearLastWord="clearTypedWord = false"/>
+        <p v-if="!gameFinished">{{ $t('currentPlayer') }} {{ currentPlayerName }}</p>
+        <Rack :key="tilesUpdate" v-if="tiles.length > 0 && !gameFinished" :tiles="tiles" :currentTiles="currentTiles" @setNewTiles="setNewTiles" @returnExchangedTiles="returnExchangedTiles" @skipTurn="createEmptyTurn"/>
         <button v-if="gameSaved || someUserHasPoints" @click="newGameConfirmation">{{ $t('startNewGame') }}</button>
       </div>
       <div>
+        p.winners(v-if="gameFinished") {{ $t('congratulations') }} {{ winner }}!
         <Scoreboard :players="players" />
       </div>
       <ConfirmMessage v-if="confirmOpen" :message="confirmMessage" @close="confirmOpen = false" @accept="startNewGame(), confirmOpen = false"/>
@@ -32,6 +33,7 @@ import doubleWordSquares from '@/game-assets/board-squares/double-word'
 import tripleLetterSquares from '@/game-assets/board-squares/triple-letter'
 import tripleWordSquares from '@/game-assets/board-squares/triple-word'
 import chooseRandomLetters from '@/utils/rack'
+import { Watch } from 'vue-property-decorator'
 
 @Component({
   components: {
@@ -52,6 +54,7 @@ export default class Game extends Vue {
   private clearTypedWord = false
   private confirmOpen = false
   private confirmMessage = ''
+  private gameFinished = false
 
   get gameSaved () {
     return localStorage.getItem('scrabble') !== null &&
@@ -81,6 +84,50 @@ export default class Game extends Vue {
       return this.players[this.currentPlayer].availableTiles
     } else {
       return []
+    }
+  }
+
+  get availableTiles () {
+    return this.tiles.reduce((sum, tile) => sum + tile.amount, 0)
+  }
+
+  get playerWithEmptyRackExists () {
+    return this.players.some(player => player.availableTiles.length === 0)
+  }
+
+  get winner () {
+    const bestScore = Math.max(...this.players.map(player => player.totalScore))
+    const playersWithHighestScore = this.players.filter(player => player.totalScore === bestScore)
+    const winnersNames = playersWithHighestScore.map(player => player.name).join(' ')
+
+    return winnersNames
+  }
+
+  @Watch('playerWithEmptyRackExists')
+  checkAvailableTiles () {
+    if (this.availableTiles === 0 &&
+      this.playerWithEmptyRackExists) {
+      this.finishGame()
+    }
+  }
+
+  checkSkipTurnsAmount () {
+    const twoTurnsPlayed = this.players[this.players.length - 1].score.length >= 2
+    const lastTurns = []
+    const maxSkippedTurns = 2
+    const skippedTurnsForCurrentGame = this.players.length * maxSkippedTurns
+    let turnsSkippedIn2LastMoves = 0
+
+    if (twoTurnsPlayed) {
+      for (const player of this.players) {
+        lastTurns.push(...player.score.slice(-2))
+      }
+    }
+
+    turnsSkippedIn2LastMoves = lastTurns.filter(turn => turn.skipped).length
+
+    if (turnsSkippedIn2LastMoves === skippedTurnsForCurrentGame) {
+      this.finishGame()
     }
   }
 
@@ -165,13 +212,13 @@ export default class Game extends Vue {
     const turnWithPoints = this.countScores(turn)
 
     this.players[this.currentPlayer].score.push(turnWithPoints)
-    this.setTotalScore()
+    this.setTotalScore(this.currentPlayer)
     this.setNextPlayer()
     this.fillAvailableTiles()
   }
 
-  setTotalScore () {
-    this.players[this.currentPlayer].totalScore = this.players[this.currentPlayer].score.reduce((prev, next) => prev + next.points, 0)
+  setTotalScore (playerId: number) {
+    this.players[playerId].totalScore = this.players[playerId].score.reduce((prev, next) => prev + next.points, 0)
   }
 
   countScores (turn: TurnModel) {
@@ -244,12 +291,19 @@ export default class Game extends Vue {
     this.players[this.currentPlayer].availableTiles = [...newTiles]
   }
 
-  skipTurn () {
+  createEmptyTurn (skipped = false) {
+    const newTurn = new TurnModel()
+    newTurn.skipped = skipped
+
     this.clearTypedWord = true
-    this.addTurn(new TurnModel())
+    this.addTurn(newTurn)
 
     if (this.players[this.currentPlayer].totalScore === 0 && this.players[this.currentPlayer].availableTiles.length === 0) {
       this.tilesUpdate++
+    }
+
+    if (skipped) {
+      this.checkSkipTurnsAmount()
     }
   }
 
@@ -269,13 +323,13 @@ export default class Game extends Vue {
     for (const player of this.players) {
       chosenLetters = chooseRandomLetters(this.tiles)
       player.availableTiles.push(...chosenLetters)
-    }
 
-    for (const chosenTile of chosenLetters) {
-      tileId = this.tiles.findIndex(tile => tile.letter.toUpperCase() === chosenTile.letter.toUpperCase())
+      for (const chosenTile of chosenLetters) {
+        tileId = this.tiles.findIndex(tile => tile.letter.toUpperCase() === chosenTile.letter.toUpperCase())
 
-      if (tileId >= 0) {
-        this.tiles[tileId].amount = this.tiles[tileId].amount - 1
+        if (tileId >= 0) {
+          this.tiles[tileId].amount = this.tiles[tileId].amount - 1
+        }
       }
     }
   }
@@ -329,12 +383,54 @@ export default class Game extends Vue {
     }
 
     this.clearTypedWord = true
-    this.skipTurn()
+    this.createEmptyTurn()
   }
 
   newGameConfirmation () {
     this.confirmOpen = true
     this.confirmMessage = this.$t('newGameQuestion') as string
+  }
+
+  finishGame () {
+    this.gameFinished = true
+    this.blockAllSquares()
+    this.subtractRemainingTiles()
+    this.addPointsToPlayerWithEmptyRack()
+    this.updateFinalScore()
+  }
+
+  blockAllSquares () {
+    for (const square of this.squares) {
+      square.isBlocked = true
+    }
+  }
+
+  subtractRemainingTiles () {
+    for (const player of this.players) {
+      const additionalTurn = new TurnModel()
+      additionalTurn.points = -player.availableTiles.reduce((sum, tile) => tile.points + sum, 0)
+      player.score.push(additionalTurn)
+    }
+  }
+
+  addPointsToPlayerWithEmptyRack () {
+    let lastTurnPoints = 0
+
+    for (const player of this.players) {
+      lastTurnPoints += player.score[player.score.length - 1].points
+    }
+
+    for (const player of this.players) {
+      if (player.availableTiles.length === 0) {
+        player.score[player.score.length - 1].points = Math.abs(lastTurnPoints)
+      }
+    }
+  }
+
+  updateFinalScore () {
+    for (const player in this.players) {
+      this.setTotalScore(parseInt(player))
+    }
   }
 }
 </script>
@@ -342,5 +438,10 @@ export default class Game extends Vue {
 .game-container {
   display: flex;
   gap: 50px;
+}
+
+.winners {
+  color: green;
+  font-size: 30px;
 }
 </style>

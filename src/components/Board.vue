@@ -2,7 +2,7 @@
   div
     div.board-container
       <Square v-for="(square, i) in squares" :ref="'square' + i" :key="square.id" :square="square" @addLetterToWord="addLetterToWord" @removeEmptyLetter="removeEmptyLetter" @goToPreviousSquare="goToPreviousSquare"/>
-    button(@click="checkWord" :disabled="typedWord.letters.length === 0") {{ $t('checkWord') }}
+    button(v-if="!gameFinished" @click="checkWord" :disabled="typedWord.letters.length === 0") {{ $t('checkWord') }}
     <ErrorMessage v-if="errorOpen" :message="errorMessage" @close="errorOpen = false"/>
 </template>
 <script lang="ts">
@@ -27,6 +27,7 @@ export default class Board extends Vue {
   @Prop() squares!: SquareModel[]
   @Prop() clearTypedWord!: boolean
   @Prop() savedWords!: WordModel[]
+  @Prop() gameFinished!: boolean
   private typedWord = new WordModel()
   private additionalWords: WordModel[] = []
   private maxTypedLetters = 7
@@ -115,13 +116,13 @@ export default class Board extends Vue {
 
   blockDelete (): void {
     for (const letter of this.typedWord.letters) {
-      letter.canBeRemoved = false
+      letter.isBlocked = true
     }
 
     if (this.additionalWords.length > 0) {
       for (const word of this.additionalWords) {
         for (const letter of word.letters) {
-          letter.canBeRemoved = false
+          letter.isBlocked = true
         }
       }
     }
@@ -491,7 +492,7 @@ export default class Board extends Vue {
       if (this.typedWord.orientation === 'horizontal' && newLetter.column < lastColumnId) {
         squareId = squareId + 1
 
-        while (!this.squares[squareId].canBeRemoved && this.squares[squareId].column < lastColumnId) {
+        while (this.squares[squareId].isBlocked && this.squares[squareId].column < lastColumnId) {
           squareId++
         }
 
@@ -499,7 +500,7 @@ export default class Board extends Vue {
         squareElement = this.$refs[nextSquareId] as Board[]
         nextSquareItem = squareElement[0].$el as HTMLElement
 
-        if (this.squares[squareId].canBeRemoved && this.squares[squareId].column <= lastColumnId) {
+        if (!this.squares[squareId].isBlocked && this.squares[squareId].column <= lastColumnId) {
           nextSquareItem.focus()
         }
       }
@@ -507,7 +508,7 @@ export default class Board extends Vue {
       if (this.typedWord.orientation === 'vertical' && newLetter.row < lastRowId) {
         squareId = squareId + 15
 
-        while (!this.squares[squareId].canBeRemoved && this.squares[squareId].column < lastRowId) {
+        while (this.squares[squareId].isBlocked && this.squares[squareId].column < lastRowId) {
           squareId += 15
         }
 
@@ -515,7 +516,7 @@ export default class Board extends Vue {
         squareElement = this.$refs[nextSquareId] as Board[]
         nextSquareItem = squareElement[0].$el as HTMLElement
 
-        if (this.squares[squareId].canBeRemoved && this.squares[squareId].row <= lastRowId) {
+        if (!this.squares[squareId].isBlocked && this.squares[squareId].row <= lastRowId) {
           nextSquareItem.focus()
         }
       }
@@ -539,7 +540,7 @@ export default class Board extends Vue {
       if (this.typedWord.orientation === 'horizontal' && currentSquare.column > 1) {
         squareId--
 
-        while (!this.squares[squareId].canBeRemoved && this.squares[squareId].column > 0) {
+        while (this.squares[squareId].isBlocked && this.squares[squareId].column > 0) {
           squareId--
         }
 
@@ -547,14 +548,14 @@ export default class Board extends Vue {
         squareElement = this.$refs[previousSquareId] as Board[]
         previousSquareItem = squareElement[0].$el as HTMLElement
 
-        if (this.squares[squareId].canBeRemoved && this.squares[squareId].column > 0) {
+        if (!this.squares[squareId].isBlocked && this.squares[squareId].column > 0) {
           previousSquareItem.focus()
         }
       }
       if (this.typedWord.orientation === 'vertical' && currentSquare.row > 0) {
         squareId -= 15
 
-        while (!this.squares[squareId].canBeRemoved && this.squares[squareId].row > 0) {
+        while (this.squares[squareId].isBlocked && this.squares[squareId].row > 0) {
           squareId -= 15
         }
 
@@ -562,7 +563,7 @@ export default class Board extends Vue {
         squareElement = this.$refs[previousSquareId] as Board[]
         previousSquareItem = squareElement[0].$el as HTMLElement
 
-        if (this.squares[squareId].canBeRemoved && this.squares[squareId].row > 0) {
+        if (!this.squares[squareId].isBlocked && this.squares[squareId].row > 0) {
           previousSquareItem.focus()
         }
       }
