@@ -5,7 +5,8 @@
         "wordTooShort": "Type at least one letter",
         "wordTooLong": "You can type up to seven letters",
         "orientation": "Word must be horizontal or vertical",
-        "namesCantBeEmpty": "Names can't be empty"
+        "namesCantBeEmpty": "Names can't be empty",
+        "incorrectWords": "These words are incorrect:"
     },
     "close": "close",
     "checkWord": "check word",
@@ -23,8 +24,9 @@
     "total": "total",
     "currentPlayer": "Current player",
     "startNewGame": "Start new game",
-    "ok": "0k",
+    "ok": "Ok",
     "skipQuestion": "Are you sure you want to skip this turn?",
     "newGameQuestion": "Are you sure you want to start new game?",
-    "congratulations": "Congratulations"
+    "congratulations": "Congratulations",
+    "chooseLanguage": "Choose language"
 }

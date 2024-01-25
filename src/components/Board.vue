@@ -100,18 +100,67 @@ export default class Board extends Vue {
 
     this.additionalWordsCheck()
 
+    this.checkAdditionalDuplicates(currentTurn.typedLetters)
+
+    if (this.$i18n.locale === 'en') {
+      this.wordsExsists(wordOk, currentTurn)
+    } else {
+      this.finishTurn(wordOk, currentTurn)
+    }
+  }
+
+  finishTurn (wordOk: boolean, currentTurn: TurnModel) {
     if (wordOk) {
       this.blockDelete()
-      this.checkAdditionalDuplicates(currentTurn.typedLetters)
       currentTurn.savedWords.push(this.typedWord, ...this.additionalWords)
       this.$emit('updateTiles', currentTurn.typedLetters)
       this.$emit('addTurn', currentTurn)
     } else {
       this.removeWordFromBoard()
+      this.$emit('createEmptyTurn')
     }
 
     this.typedWord = new WordModel()
     this.additionalWords = []
+  }
+
+  async wordsExsists (wordOk: boolean, currentTurn: TurnModel) {
+    const wordsObjectsToCheck = [this.typedWord, ...this.additionalWords]
+    const wordsToCheck = []
+    const correctWords = []
+    const incorrectWords = []
+    let wordsAreCorrect = true
+
+    for (const word of wordsObjectsToCheck) {
+      const newWord = []
+      for (const wordLetter of word.letters) {
+        newWord.push(wordLetter.letter)
+      }
+      wordsToCheck.push(newWord.join(''))
+    }
+
+    try {
+      for (const word of wordsToCheck) {
+        const res = await fetch(`https://api.dictionaryapi.dev/api/v2/entries/en/${word}`)
+        correctWords.push(res.ok)
+
+        if (!res.ok) {
+          wordsAreCorrect = false
+          incorrectWords.push(word)
+        }
+      }
+    } catch (err) {
+      wordsAreCorrect = false
+    }
+
+    wordsAreCorrect = correctWords.filter(word => word === false).length === 0
+
+    if (!wordsAreCorrect) {
+      this.errorMessage = `${this.$t('errors.incorrectWords')} ${incorrectWords}`
+      this.errorOpen = true
+    }
+
+    this.finishTurn(wordsAreCorrect, currentTurn)
   }
 
   blockDelete (): void {
@@ -569,7 +618,7 @@ export default class Board extends Vue {
       }
     }
 
-    if (this.typedWord.orientation === 'both' && currentSquare.row > 1 && currentSquare.column > 1) {
+    if (this.typedWord.orientation === 'both' && currentSquare.row > 1 && currentSquare.column > 1 && this.typedWord.letters.length > 0) {
       squareId = this.squares.findIndex(square => square.id === this.typedWord.letters[0].id)
       previousSquareId = `square${squareId}`
       squareElement = this.$refs[previousSquareId] as Board[]
