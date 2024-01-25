@@ -3,9 +3,9 @@
     <PlayersSettings @updatePlayers="updatePlayers" v-if="playersSettingsVisible" />
     <div class="game-container" v-if="!playersSettingsVisible">
       <div>
-        <Board :squares="squares" :currentTiles="currentTiles" :clearTypedWord="clearTypedWord" :savedWords="savedWords" @addTurn="addTurn" @updateTiles="updateTiles" @removeTypedLetter="removeTypedLetter" @stopClearLastWord="clearTypedWord = false"/>
-        p {{ $t('currentPlayer') }} {{ currentPlayerName }}
-        <Rack :key="tilesUpdate" v-if="tiles.length > 0" :tiles="tiles" :currentTiles="currentTiles" @setNewTiles="setNewTiles" @returnExchangedTiles="returnExchangedTiles" @skipTurn="createEmptyTurn"/>
+        <Board :squares="squares" :currentTiles="currentTiles" :clearTypedWord="clearTypedWord" :savedWords="savedWords" :gameFinished="gameFinished" @addTurn="addTurn" @updateTiles="updateTiles" @removeTypedLetter="removeTypedLetter" @stopClearLastWord="clearTypedWord = false"/>
+        <p v-if="!gameFinished">{{ $t('currentPlayer') }} {{ currentPlayerName }}</p>
+        <Rack :key="tilesUpdate" v-if="tiles.length > 0 && !gameFinished" :tiles="tiles" :currentTiles="currentTiles" @setNewTiles="setNewTiles" @returnExchangedTiles="returnExchangedTiles" @skipTurn="createEmptyTurn"/>
         <button v-if="gameSaved || someUserHasPoints" @click="newGameConfirmation">{{ $t('startNewGame') }}</button>
       </div>
       <div>
@@ -385,11 +385,35 @@ export default class Game extends Vue {
   finishGame () {
     this.gameFinished = true
     this.blockAllSquares()
+    this.subtractRemainingTiles()
+    this.addPointsToPlayerWithEmptyRack()
   }
 
   blockAllSquares () {
     for (const square of this.squares) {
       square.isBlocked = true
+    }
+  }
+
+  subtractRemainingTiles () {
+    for (const player of this.players) {
+      const additionalTurn = new TurnModel()
+      additionalTurn.points = -player.availableTiles.reduce((sum, tile) => tile.points + sum, 0)
+      player.score.push(additionalTurn)
+    }
+  }
+
+  addPointsToPlayerWithEmptyRack () {
+    const playerWithEmptyRackId = this.players.findIndex(player => player.availableTiles.length === 0)
+    const playerWithEmptyRack = this.players[playerWithEmptyRackId]
+    let lastTurnPoints = 0
+
+    if (playerWithEmptyRackId >= 0) {
+      for (const player of this.players) {
+        lastTurnPoints += player.score[player.score.length - 1].points
+      }
+
+      playerWithEmptyRack.score[playerWithEmptyRack.score.length - 1].points = Math.abs(lastTurnPoints)
     }
   }
 }

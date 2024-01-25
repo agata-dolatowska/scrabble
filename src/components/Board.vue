@@ -2,7 +2,7 @@
   div
     div.board-container
       <Square v-for="(square, i) in squares" :ref="'square' + i" :key="square.id" :square="square" @addLetterToWord="addLetterToWord" @removeEmptyLetter="removeEmptyLetter" @goToPreviousSquare="goToPreviousSquare"/>
-    button(@click="checkWord" :disabled="typedWord.letters.length === 0") {{ $t('checkWord') }}
+    button(v-if="!gameFinished" @click="checkWord" :disabled="typedWord.letters.length === 0") {{ $t('checkWord') }}
     <ErrorMessage v-if="errorOpen" :message="errorMessage" @close="errorOpen = false"/>
 </template>
 <script lang="ts">
@@ -27,6 +27,7 @@ export default class Board extends Vue {
   @Prop() squares!: SquareModel[]
   @Prop() clearTypedWord!: boolean
   @Prop() savedWords!: WordModel[]
+  @Prop() gameFinished!: boolean
   private typedWord = new WordModel()
   private additionalWords: WordModel[] = []
   private maxTypedLetters = 7
