@@ -611,7 +611,7 @@ export default class Board extends Vue {
       }
     }
 
-    if (this.typedWord.orientation === 'both' && currentSquare.row > 1 && currentSquare.column > 1) {
+    if (this.typedWord.orientation === 'both' && currentSquare.row > 1 && currentSquare.column > 1 && this.typedWord.letters.length > 0) {
       squareId = this.squares.findIndex(square => square.id === this.typedWord.letters[0].id)
       previousSquareId = `square${squareId}`
       squareElement = this.$refs[previousSquareId] as Board[]
