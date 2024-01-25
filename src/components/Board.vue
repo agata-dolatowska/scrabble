@@ -128,6 +128,7 @@ export default class Board extends Vue {
     const wordsObjectsToCheck = [this.typedWord, ...this.additionalWords]
     const wordsToCheck = []
     const correctWords = []
+    const incorrectWords = []
     let wordsAreCorrect = true
 
     for (const word of wordsObjectsToCheck) {
@@ -145,6 +146,7 @@ export default class Board extends Vue {
 
         if (!res.ok) {
           wordsAreCorrect = false
+          incorrectWords.push(word)
         }
       }
     } catch (err) {
@@ -152,6 +154,11 @@ export default class Board extends Vue {
     }
 
     wordsAreCorrect = correctWords.filter(word => word === false).length === 0
+
+    if (!wordsAreCorrect) {
+      this.errorMessage = `${this.$t('errors.incorrectWords')} ${incorrectWords}`
+      this.errorOpen = true
+    }
 
     this.finishTurn(wordsAreCorrect, currentTurn)
   }

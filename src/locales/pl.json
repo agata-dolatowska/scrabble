@@ -5,7 +5,8 @@
         "wordTooShort": "Napisz przynajmniej jedną literę",
         "wordTooLong": "Możesz napisać słowo z maksymalnie siedmiu liter",
         "orientation": "Słowo musi być ułożone pionowo lub poziomo",
-        "namesCantBeEmpty": "Nazwy graczy nie mogą być puste"
+        "namesCantBeEmpty": "Nazwy graczy nie mogą być puste",
+        "incorrectWords": "Wpisane słowa są niepoprawne:"
     },
     "close": "zamknij",
     "checkWord": "sprawdź słowo",
