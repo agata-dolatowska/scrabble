@@ -9,6 +9,7 @@
         <button v-if="gameSaved || someUserHasPoints" @click="newGameConfirmation">{{ $t('startNewGame') }}</button>
       </div>
       <div>
+        p.winners(v-if="gameFinished") {{ $t('congratulations') }} {{ winner }}!
         <Scoreboard :players="players" />
       </div>
       <ConfirmMessage v-if="confirmOpen" :message="confirmMessage" @close="confirmOpen = false" @accept="startNewGame(), confirmOpen = false"/>
@@ -92,6 +93,14 @@ export default class Game extends Vue {
 
   get playerWithEmptyRackExists () {
     return this.players.some(player => player.availableTiles.length === 0)
+  }
+
+  get winner () {
+    const bestScore = Math.max(...this.players.map(player => player.totalScore))
+    const playersWithHighestScore = this.players.filter(player => player.totalScore === bestScore)
+    const winnersNames = playersWithHighestScore.map(player => player.name).join(' ')
+
+    return winnersNames
   }
 
   @Watch('playerWithEmptyRackExists')
@@ -405,16 +414,16 @@ export default class Game extends Vue {
   }
 
   addPointsToPlayerWithEmptyRack () {
-    const playerWithEmptyRackId = this.players.findIndex(player => player.availableTiles.length === 0)
-    const playerWithEmptyRack = this.players[playerWithEmptyRackId]
     let lastTurnPoints = 0
 
-    if (playerWithEmptyRackId >= 0) {
-      for (const player of this.players) {
-        lastTurnPoints += player.score[player.score.length - 1].points
-      }
+    for (const player of this.players) {
+      lastTurnPoints += player.score[player.score.length - 1].points
+    }
 
-      playerWithEmptyRack.score[playerWithEmptyRack.score.length - 1].points = Math.abs(lastTurnPoints)
+    for (const player of this.players) {
+      if (player.availableTiles.length === 0) {
+        player.score[player.score.length - 1].points = Math.abs(lastTurnPoints)
+      }
     }
   }
 
@@ -429,5 +438,10 @@ export default class Game extends Vue {
 .game-container {
   display: flex;
   gap: 50px;
+}
+
+.winners {
+  color: green;
+  font-size: 30px;
 }
 </style>
