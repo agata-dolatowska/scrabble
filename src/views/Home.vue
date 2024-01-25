@@ -4,7 +4,7 @@
     <PlayersSettings @updatePlayers="updatePlayers" v-if="playersSettingsVisible" />
     <div class="game-container" v-if="!playersSettingsVisible">
       <div>
-        <Board :squares="squares" :currentTiles="currentTiles" :clearTypedWord="clearTypedWord" :savedWords="savedWords" :gameFinished="gameFinished" @addTurn="addTurn" @updateTiles="updateTiles" @removeTypedLetter="removeTypedLetter" @stopClearLastWord="clearTypedWord = false"/>
+        <Board :squares="squares" :currentTiles="currentTiles" :clearTypedWord="clearTypedWord" :savedWords="savedWords" :gameFinished="gameFinished" @addTurn="addTurn" @updateTiles="updateTiles" @removeTypedLetter="removeTypedLetter" @stopClearLastWord="clearTypedWord = false" @createEmptyTurn="createEmptyTurn"/>
         <p v-if="!gameFinished">{{ $t('currentPlayer') }} {{ currentPlayerName }}</p>
         <Rack :key="tilesUpdate" v-if="tiles.length > 0 && !gameFinished" :tiles="tiles" :currentTiles="currentTiles" @setNewTiles="setNewTiles" @returnExchangedTiles="returnExchangedTiles" @skipTurn="createEmptyTurn"/>
         <button v-if="gameSaved || someUserHasPoints" @click="newGameConfirmation">{{ $t('startNewGame') }}</button>
