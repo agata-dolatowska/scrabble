@@ -1,5 +1,6 @@
 <template lang="pug">
   div
+    <LangSwitcher />
     <PlayersSettings @updatePlayers="updatePlayers" v-if="playersSettingsVisible" />
     <div class="game-container" v-if="!playersSettingsVisible">
       <div>
@@ -23,11 +24,13 @@ import Rack from '@/components/Rack.vue'
 import Scoreboard from '@/components/Scoreboard.vue'
 import PlayersSettings from '@/components/PlayersSettings.vue'
 import ConfirmMessage from '@/components/ConfirmMessage.vue'
+import LangSwitcher from '@/components/LangSwitcher.vue'
 import TurnModel from '@/models/Turn'
 import TileModel from '@/models/Tile'
 import SquareModel from '@/models/Square'
 import PlayerModel from '@/models/Player'
-import defaultTiles from '@/game-assets/tiles'
+import enTiles from '@/game-assets/tiles/en'
+import plTiles from '@/game-assets/tiles/pl'
 import doubleLetterSquares from '@/game-assets/board-squares/double-letter'
 import doubleWordSquares from '@/game-assets/board-squares/double-word'
 import tripleLetterSquares from '@/game-assets/board-squares/triple-letter'
@@ -41,7 +44,8 @@ import { Watch } from 'vue-property-decorator'
     Scoreboard,
     Rack,
     PlayersSettings,
-    ConfirmMessage
+    ConfirmMessage,
+    LangSwitcher
   }
 })
 export default class Game extends Vue {
@@ -228,6 +232,7 @@ export default class Game extends Vue {
     const wordBonuses = []
     const wordsPoints = []
     const allLettersUsedPoints = 50
+    const defaultTiles = this.$i18n.locale === 'en' ? enTiles : plTiles
 
     for (const word of turn.savedWords) {
       sum = 0
@@ -309,6 +314,7 @@ export default class Game extends Vue {
 
   createNewSetOfTiles (): void {
     let newTile: TileModel
+    const defaultTiles = this.$i18n.locale === 'en' ? enTiles : plTiles
 
     for (const tile of defaultTiles) {
       newTile = new TileModel(tile.letter, tile.amount, tile.points)

@@ -26,5 +26,6 @@
     "ok": "Ok",
     "skipQuestion": "Czy na pewno chcesz opuścić tę kolejkę?",
     "newGameQuestion": "Czy na pewno chcesz zacząć nową grę?",
-    "congratulations": "Gratulacje"
+    "congratulations": "Gratulacje",
+    "chooseLanguage": "Wybierz język"
 }

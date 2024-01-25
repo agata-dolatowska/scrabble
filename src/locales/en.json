@@ -26,5 +26,6 @@
     "ok": "Ok",
     "skipQuestion": "Are you sure you want to skip this turn?",
     "newGameQuestion": "Are you sure you want to start new game?",
-    "congratulations": "Congratulations"
+    "congratulations": "Congratulations",
+    "chooseLanguage": "Choose language"
 }
