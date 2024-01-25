@@ -1,0 +1,30 @@
+{
+    "errors": {
+        "emptyCenter": "Pierwsze słowo musi być położone na centralnym polu planszy",
+        "firstWordTooShort": "Pierwsze słowo musi miec przynajmniej dwie litery",
+        "wordTooShort": "Napisz przynajmniej jedną literę",
+        "wordTooLong": "Możesz napisać słowo z maksymalnie siedmiu liter",
+        "orientation": "Słowo musi być ułożone pionowo lub poziomo",
+        "namesCantBeEmpty": "Nazwy graczy nie mogą być puste"
+    },
+    "close": "zamknij",
+    "checkWord": "sprawdź słowo",
+    "delete": "usuń",
+    "addPlayer": "Dodaj gracza",
+    "savePlayers": "Zapisz graczy",
+    "players": "Gracze",
+    "addPlayersName": "dodaj nazwę gracza",
+    "selectLettersToExchange": "Wybierz litery do wymiany",
+    "skipTurn": "Pomiń kolejkę",
+    "exchange": "Wymień",
+    "cancel": "Anuluj",
+    "acceptExchange": "Zatwierdź wymianę liter",
+    "turn": "kolejka",
+    "total": "suma",
+    "currentPlayer": "Kolejka gracza",
+    "startNewGame": "Zacznij nową grę",
+    "ok": "Ok",
+    "skipQuestion": "Czy na pewno chcesz opuścić tę kolejkę?",
+    "newGameQuestion": "Czy na pewno chcesz zacząć nową grę?",
+    "congratulations": "Gratulacje"
+}
