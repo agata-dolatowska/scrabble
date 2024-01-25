@@ -203,13 +203,13 @@ export default class Game extends Vue {
     const turnWithPoints = this.countScores(turn)
 
     this.players[this.currentPlayer].score.push(turnWithPoints)
-    this.setTotalScore()
+    this.setTotalScore(this.currentPlayer)
     this.setNextPlayer()
     this.fillAvailableTiles()
   }
 
-  setTotalScore () {
-    this.players[this.currentPlayer].totalScore = this.players[this.currentPlayer].score.reduce((prev, next) => prev + next.points, 0)
+  setTotalScore (playerId: number) {
+    this.players[playerId].totalScore = this.players[playerId].score.reduce((prev, next) => prev + next.points, 0)
   }
 
   countScores (turn: TurnModel) {
@@ -387,6 +387,7 @@ export default class Game extends Vue {
     this.blockAllSquares()
     this.subtractRemainingTiles()
     this.addPointsToPlayerWithEmptyRack()
+    this.updateFinalScore()
   }
 
   blockAllSquares () {
@@ -414,6 +415,12 @@ export default class Game extends Vue {
       }
 
       playerWithEmptyRack.score[playerWithEmptyRack.score.length - 1].points = Math.abs(lastTurnPoints)
+    }
+  }
+
+  updateFinalScore () {
+    for (const player in this.players) {
+      this.setTotalScore(parseInt(player))
     }
   }
 }
