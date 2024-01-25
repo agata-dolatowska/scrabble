@@ -1,6 +1,6 @@
 <template lang="pug">
   div
-    <LangSwitcher />
+    <LangSwitcher v-if="playersSettingsVisible" />
     <PlayersSettings @updatePlayers="updatePlayers" v-if="playersSettingsVisible" />
     <div class="game-container" v-if="!playersSettingsVisible">
       <div>
