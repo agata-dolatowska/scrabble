@@ -2,7 +2,7 @@
   div
     <p v-if="exchangeActive">{{  $t('selectLettersToExchange') }}</p>
     .rack-container
-        <Tile v-for="(tile, id) in currentTiles" :id="id" :tile="tile" :exchangeActive="exchangeActive" :clearExchange="clearExchange" @addToExchange="addToExchange" @removeFromExchange="removeFromExchange" :class="{'tile-used': tile.typed}"/>
+        <Tile v-for="(tile, id) in currentTilesCopy" :id="id" :tile="tile" :exchangeActive="exchangeActive" :clearExchange="clearExchange" @addToExchange="addToExchange" @removeFromExchange="removeFromExchange" :class="{'tile-used': tile.typed}"/>
     <Button @click="skipConfirmation">{{ $t('skipTurn') }}</Button>
     <button v-if="!exchangeActive" @click="exchangeActive = true">{{ $t('exchange') }}</button>
     <button v-if="exchangeActive" @click="cancelExchange">{{ $t('cancel') }}</button>
@@ -35,19 +35,29 @@ export default class Rack extends Vue {
   private clearExchange = 0
   private confirmOpen = false
   private confirmMessage = ''
+  private currentTilesCopy: TileModel[] = JSON.parse(JSON.stringify(this.currentTiles))
+
+  @Watch('currentTiles', { immediate: true, deep: true })
+  updateCurrentTiles () {
+    this.currentTilesCopy = JSON.parse(JSON.stringify(this.currentTiles))
+  }
 
   @Watch('typedWord', { immediate: true, deep: true })
   updateTypedLetters () {
     const lettersToCheck = this.typedWord.letters.map(typedLetter => typedLetter.letter.toUpperCase())
-    const currentLetters = this.currentTiles.map(currentTile => currentTile.letter.toUpperCase())
-    const otherLetters = lettersToCheck.filter(letterToCheck => !currentLetters.includes(letterToCheck))
+    const currentLetters = this.currentTilesCopy.map(currentTile => currentTile.letter.toUpperCase())
+    const otherLetters = lettersToCheck.filter(letterToCheck => {
+      const currentLetterId = currentLetters.findIndex(letter => letter === letterToCheck)
+      currentLetters.splice(currentLetterId, 1)
+      return currentLetterId < 0
+    })
 
-    for (const currentLetter of this.currentTiles) {
+    for (const currentLetter of this.currentTilesCopy) {
       currentLetter.typed = false
     }
 
-    for (const currentLetter of this.currentTiles) {
-      const tileId = lettersToCheck.findIndex(typedLetter => typedLetter === currentLetter.letter)
+    for (const currentLetter of this.currentTilesCopy) {
+      const tileId = lettersToCheck.findIndex(typedLetter => typedLetter.toUpperCase() === currentLetter.letter.toUpperCase())
 
       if (tileId >= 0 && currentLetter.typed === false) {
         lettersToCheck.splice(tileId, 1)
@@ -88,12 +98,12 @@ export default class Rack extends Vue {
     let tileId = 0
 
     for (const tile of this.tilesToExchange) {
-      tileId = this.currentTiles.findIndex(currentTile => currentTile.letter.toUpperCase() === tile.letter.toUpperCase())
-      this.currentTiles.splice(tileId, 1)
+      tileId = this.currentTilesCopy.findIndex(currentTile => currentTile.letter.toUpperCase() === tile.letter.toUpperCase())
+      this.currentTilesCopy.splice(tileId, 1)
     }
 
     this.exchangeActive = false
-    this.$emit('setNewTiles', chooseRandomLetters(this.tiles, this.currentTiles))
+    this.$emit('setNewTiles', chooseRandomLetters(this.tiles, this.currentTilesCopy))
     this.$emit('returnExchangedTiles', this.tilesToExchange)
     this.tilesToExchange = []
     this.clearExchange++
