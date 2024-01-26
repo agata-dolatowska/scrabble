@@ -2,7 +2,7 @@
   div
     <p v-if="exchangeActive">{{  $t('selectLettersToExchange') }}</p>
     .rack-container
-        <Tile v-for="(tile, id) in currentTiles" :id="id" :tile="tile" :exchangeActive="exchangeActive" :clearExchange="clearExchange" @addToExchange="addToExchange" @removeFromExchange="removeFromExchange"/>
+        <Tile v-for="(tile, id) in currentTiles" :id="id" :tile="tile" :exchangeActive="exchangeActive" :clearExchange="clearExchange" @addToExchange="addToExchange" @removeFromExchange="removeFromExchange" :class="{'tile-used': tile.typed}"/>
     <Button @click="skipConfirmation">{{ $t('skipTurn') }}</Button>
     <button v-if="!exchangeActive" @click="exchangeActive = true">{{ $t('exchange') }}</button>
     <button v-if="exchangeActive" @click="cancelExchange">{{ $t('cancel') }}</button>
@@ -13,9 +13,10 @@
 <script lang="ts">
 import Vue from 'vue'
 import Component from 'vue-class-component'
-import { Prop } from 'vue-property-decorator'
+import { Prop, Watch } from 'vue-property-decorator'
 import Tile from '@/components/Tile.vue'
 import TileModel from '@/models/Tile'
+import WordModel from '@/models/Word'
 import chooseRandomLetters from '@/utils/rack'
 import ConfirmMessage from './ConfirmMessage.vue'
 
@@ -28,11 +29,30 @@ import ConfirmMessage from './ConfirmMessage.vue'
 export default class Rack extends Vue {
   @Prop() tiles!: TileModel[]
   @Prop() currentTiles!: TileModel[]
+  @Prop() typedWord!: WordModel
   private exchangeActive = false
   private tilesToExchange: TileModel[] = []
   private clearExchange = 0
   private confirmOpen = false
   private confirmMessage = ''
+
+  @Watch('typedWord', { immediate: true, deep: true })
+  updateTypedLetters () {
+    const lettersToCheck = this.typedWord.letters.map(typedLetter => typedLetter.letter)
+
+    for (const currentLetter of this.currentTiles) {
+      currentLetter.typed = false
+    }
+
+    for (const currentLetter of this.currentTiles) {
+      const tileId = lettersToCheck.findIndex(typedLetter => typedLetter.toUpperCase() === currentLetter.letter.toUpperCase())
+
+      if (tileId >= 0 && currentLetter.typed === false) {
+        lettersToCheck.splice(tileId, 1)
+        currentLetter.typed = true
+      }
+    }
+  }
 
   addToExchange (tile: TileModel): void {
     this.tilesToExchange.push(tile)
@@ -76,5 +96,9 @@ export default class Rack extends Vue {
 .rack-container {
   display: flex;
   flex-wrap: wrap;
+}
+
+.tile-used {
+  background: lightgreen;
 }
 </style>
