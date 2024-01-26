@@ -4,9 +4,9 @@
     <PlayersSettings @updatePlayers="updatePlayers" v-if="playersSettingsVisible" />
     <div class="game-container" v-if="!playersSettingsVisible">
       <div>
-        <Board :squares="squares" :currentTiles="currentTiles" :clearTypedWord="clearTypedWord" :savedWords="savedWords" :gameFinished="gameFinished" @addTurn="addTurn" @updateTiles="updateTiles" @removeTypedLetter="removeTypedLetter" @stopClearLastWord="clearTypedWord = false" @createEmptyTurn="createEmptyTurn"/>
+        <Board :squares="squares" :currentTiles="currentTiles" :clearTypedWord="clearTypedWord" :savedWords="savedWords" :gameFinished="gameFinished" @addTurn="addTurn" @updateTiles="updateTiles" @removeTypedLetter="removeTypedLetter" @stopClearLastWord="clearTypedWord = false" @createEmptyTurn="createEmptyTurn" @updateTypedWord="updateTypedWord"/>
         <p v-if="!gameFinished">{{ $t('currentPlayer') }} {{ currentPlayerName }}</p>
-        <Rack :key="tilesUpdate" v-if="tiles.length > 0 && !gameFinished" :tiles="tiles" :currentTiles="currentTiles" @setNewTiles="setNewTiles" @returnExchangedTiles="returnExchangedTiles" @skipTurn="createEmptyTurn"/>
+        <Rack :key="tilesUpdate" v-if="tiles.length > 0 && !gameFinished" :tiles="tiles" :currentTiles="currentTiles" :typedWord="typedWord" @setNewTiles="setNewTiles" @returnExchangedTiles="returnExchangedTiles" @skipTurn="createEmptyTurn"/>
         <button v-if="gameSaved || someUserHasPoints" @click="newGameConfirmation">{{ $t('startNewGame') }}</button>
       </div>
       <div>
@@ -29,6 +29,7 @@ import TurnModel from '@/models/Turn'
 import TileModel from '@/models/Tile'
 import SquareModel from '@/models/Square'
 import PlayerModel from '@/models/Player'
+import WordModel from '@/models/Word'
 import enTiles from '@/game-assets/tiles/en'
 import plTiles from '@/game-assets/tiles/pl'
 import doubleLetterSquares from '@/game-assets/board-squares/double-letter'
@@ -59,6 +60,7 @@ export default class Game extends Vue {
   private confirmOpen = false
   private confirmMessage = ''
   private gameFinished = false
+  typedWord: WordModel = new WordModel()
 
   get gameSaved () {
     return localStorage.getItem('scrabble') !== null &&
@@ -113,6 +115,10 @@ export default class Game extends Vue {
       this.playerWithEmptyRackExists) {
       this.finishGame()
     }
+  }
+
+  updateTypedWord (word: WordModel) {
+    this.typedWord = word
   }
 
   checkSkipTurnsAmount () {

@@ -47,6 +47,11 @@ export default class Board extends Vue {
     }
   }
 
+  @Watch('typedWord')
+  private updateTypedWord () {
+    this.$emit('updateTypedWord', this.typedWord)
+  }
+
   private removeTypedLetters () {
     let squareArrId = null
 
@@ -570,6 +575,8 @@ export default class Board extends Vue {
         }
       }
     }
+
+    this.$emit('updateTypedWord', this.typedWord)
   }
 
   removeEmptyLetter (letterToDelete: SquareModel): void {
