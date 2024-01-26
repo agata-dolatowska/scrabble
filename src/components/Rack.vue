@@ -38,17 +38,26 @@ export default class Rack extends Vue {
 
   @Watch('typedWord', { immediate: true, deep: true })
   updateTypedLetters () {
-    const lettersToCheck = this.typedWord.letters.map(typedLetter => typedLetter.letter)
+    const lettersToCheck = this.typedWord.letters.map(typedLetter => typedLetter.letter.toUpperCase())
+    const currentLetters = this.currentTiles.map(currentTile => currentTile.letter.toUpperCase())
+    const otherLetters = lettersToCheck.filter(letterToCheck => !currentLetters.includes(letterToCheck))
 
     for (const currentLetter of this.currentTiles) {
       currentLetter.typed = false
     }
 
     for (const currentLetter of this.currentTiles) {
-      const tileId = lettersToCheck.findIndex(typedLetter => typedLetter.toUpperCase() === currentLetter.letter.toUpperCase())
+      const tileId = lettersToCheck.findIndex(typedLetter => typedLetter === currentLetter.letter)
 
       if (tileId >= 0 && currentLetter.typed === false) {
         lettersToCheck.splice(tileId, 1)
+        currentLetter.typed = true
+      }
+
+      if (currentLetter.letter === '' &&
+      currentLetter.typed === false &&
+      otherLetters.length > 0) {
+        otherLetters.shift()
         currentLetter.typed = true
       }
     }
